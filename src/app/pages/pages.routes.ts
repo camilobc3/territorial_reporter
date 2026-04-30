@@ -13,4 +13,8 @@ export const PagesRoutes: Routes = [
       ],
     },
   },
+  {
+    path: 'users',
+    loadChildren: () => import('./users/users.routes').then((m) => m.UserRoutes)
+  }
 ];
