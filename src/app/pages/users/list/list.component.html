@@ -1,21 +1,13 @@
-<h1 class="title">
-    Listado de usuarios
-</h1>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Email</th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (user of users; track user.id) {
-            <tr>
-                <td>{{ user.name }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-            </tr>
-        }   
-    </tbody>
-</table>
+<app-dynamic-table
+  [data]="users"
+  [columns]="columns"
+  [actions]="actions"
+  [loading]="loading"
+  [totalItems]="total"
+  [totalPages]="totalPages"
+  [page]="page"
+  [pageSize]="pageSize"
+  (pageChange)="onPageChange($event)"
+  (action)="onTableAction($event)">
+</app-dynamic-table>
+

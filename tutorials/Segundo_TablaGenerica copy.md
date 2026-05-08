@@ -1,9 +1,105 @@
-1. Creación de la componente en el proyecto, que servirá como tabla genérica, para listar cualquier entidad.
-``` sh
-ng g c components/ui/table/dynamic-table --standalone --skip-tests
+1. Para consumir ahora datos desde una api, y verlos en la componente dimámica, primero se debe configurar la variable de entorno.
+
+Crear dentro de src/environments/environments.ts
+
+``` typescript
+export const environment = {
+    production: false,
+    apiUrl: 'http://127.0.0.1:5000'
+};
 ```
 
-2. Crear los modelos requeridos en la carpeta `models/component-dynamic-table`
+2. Luego será necesario crear un servicio para hacer la conexión con el backend
+
+``` sh
+ng g service services/users
+```
+
+Internamente debe de tener el siguiente código
+
+``` typescript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+import { environment } from '../../environments/environments';
+import { User } from '../models/user';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UsersService {
+
+  private readonly apiUrl = `${environment.apiUrl}/users`;
+
+  constructor(private http: HttpClient) {}
+
+  /**
+   * Obtener todos los usuarios
+   * GET /users
+   */
+  getAll(): Observable<User[]> {
+    return this.http.get<User[]>(this.apiUrl);
+  }
+
+  /**
+   * Obtener usuarios paginados
+   * GET /users?page=&pageSize=
+   */
+  getPaged(page: number, pageSize: number): Observable<{
+    data: User[];
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+  }> {
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('pageSize', String(pageSize));
+    return this.http.get<{
+      data: User[];
+      page: number;
+      pageSize: number;
+      totalItems: number;
+      totalPages: number;
+    }>(this.apiUrl, { params });
+  }
+
+  /**
+   * Obtener usuario por ID
+   * GET /users/:id
+   */
+  getById(id: number): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Crear usuario
+   * POST /users
+   */
+  create(user: Omit<User, 'id'>): Observable<User> {
+    return this.http.post<User>(this.apiUrl, user);
+  }
+
+  /**
+   * Actualizar usuario completo
+   * PUT /users/:id
+   */
+  update(id: number, user: User): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/${id}`, user);
+  }
+
+  /**
+   * Eliminar usuario
+   * DELETE /users/:id
+   */
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+}
+```
+
+3. Crear los modelos requeridos en la carpeta `models/component-dynamic-table`
 
 -  En el archivo `column-def.ts`, el atributo `header` es importante porque define el nombre visible de la columna en la tabla, facilitando la identificación de la información mostrada. El atributo `key` permite relacionar la columna con la propiedad específica de los datos que se desea visualizar, haciendo posible que la tabla muestre información dinámica. Finalmente, el atributo `class` brinda la posibilidad de aplicar estilos personalizados mediante clases CSS, mejorando la presentación y organización visual de la tabla.
 
@@ -43,8 +139,116 @@ export interface TablePageEvent {
 ```
 
 
+4. Instalar librería para iconos
 
-3. El archivo `dynamic-table.component.ts` define una componente genérica y reutilizable llamada `DynamicTableComponent`, cuya función principal es mostrar información en forma de tabla dinámica con soporte para paginación, carga de datos y acciones sobre cada registro. Esta componente permite reutilizar una misma estructura para listar diferentes tipos de entidades, como usuarios, productos o clientes, evitando duplicar código y facilitando el mantenimiento de la aplicación. 
+```
+npm install @ng-icons/core @ng-icons/heroicons
+```
+
+5. Posteriormente se debe programar en el archivo `pages/users/list/listcomponent.ts`
+
+El archivo `list.component.ts` define el componente `ListComponent`, cuya función principal es consumir la información de usuarios desde el servicio `UsersService` y mostrarla utilizando la componente reutilizable `DynamicTableComponent`. Este componente configura las columnas de la tabla, las acciones disponibles por fila y controla la paginación de los datos.
+
+Además, administra el estado de carga (`loading`), obtiene los usuarios desde la API mediante el método `loadUsers`, y responde a los eventos emitidos por la tabla, como cambios de página (`onPageChange`) o acciones ejecutadas sobre un registro (`onTableAction`), permitiendo manejar operaciones como ver, editar o eliminar usuarios.
+
+
+``` typescript
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { UsersService } from 'src/app/services/users.service';
+import { User } from 'src/app/models/user';
+import { DynamicTableComponent} from 'src/app/components/ui/table/dynamic-table/dynamic-table.component';
+import { ColumnDef } from 'src/app/models/component-dynamic-table/column-def';
+import { ActionButton } from 'src/app/models/component-dynamic-table/action-button';
+import { TablePageEvent } from 'src/app/models/component-dynamic-table/table-page-event';
+
+@Component({
+  selector: 'app-list',
+  standalone: true,
+  imports: [CommonModule, DynamicTableComponent],
+  templateUrl: './list.component.html',
+  styleUrl: './list.component.scss',
+})
+export class ListComponent implements OnInit {
+
+  users: User[] = [];
+  loading = false;
+
+  page = 1;
+  pageSize = 5;
+  total = 0;
+  totalPages = 1;
+
+  columns: ColumnDef[] = [
+    { header: 'ID', key: 'id' },
+    { header: 'Nombre', key: 'name' },
+    { header: 'Usuario', key: 'username' },
+    { header: 'Email', key: 'email' },
+  ];
+
+  actions: ActionButton[] = [
+    { id: 'view', label: 'Ver',icon: 'eye'  ,class: 'px-2 py-1 mr-2 rounded bg-blue-500 text-white'},
+    { id: 'edit', label: 'Editar', icon: 'pencil',class: 'px-2 py-1 mr-2 rounded bg-yellow-400 text-black'},
+    { id: 'delete', label: 'Eliminar', icon: 'trash',class: 'px-2 py-1 rounded bg-red-500 text-white' },
+  ];
+
+  constructor(private usersService: UsersService) {}
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  loadUsers(page = this.page, pageSize = this.pageSize): void {
+    this.loading = true;
+    this.usersService.getPaged(page, pageSize).subscribe({
+      next: (resp) => {
+        this.users = resp.data || [];
+        this.page = resp.page || page;
+        this.pageSize = resp.pageSize || pageSize;
+        this.total = resp.totalItems ?? this.users.length;
+        this.totalPages = resp.totalPages ?? Math.max(1, Math.ceil(this.total / this.pageSize));
+        this.loading = false;
+      },
+      error: () => {
+        this.users = [];
+        this.total = 0;
+        this.totalPages = 1;
+        this.loading = false;
+      }
+    });
+  }
+  onPageChange(event: TablePageEvent): void {
+    this.page = event.page;
+    this.pageSize = event.pageSize;
+    console.log('Página cambiada:', event);
+    this.loadUsers(this.page, this.pageSize);
+  }
+
+  onTableAction(event: { actionId: string; row: User }): void {
+    const { actionId, row } = event;
+    // Manejar acciones desde el componente padre
+    if (actionId === 'view') {
+      console.log('Ver', row);
+    } else if (actionId === 'edit') {
+      console.log('Editar', row);
+    } else if (actionId === 'delete') {
+      console.log('Eliminar', row);
+    } else {
+      console.log('Acción desconocida', actionId, row);
+    }
+  }
+
+}
+```
+5. Creación de la componente en el proyecto, que servirá como tabla genérica, para listar cualquier entidad.
+``` sh
+ng g c components/ui/table/dynamic-table --standalone --skip-tests
+```
+
+![AnalogíaSatélite](images/AnalogiaSatelite.png)
+
+
+6. El archivo `dynamic-table.component.ts` define una componente genérica y reutilizable llamada `DynamicTableComponent`, cuya función principal es mostrar información en forma de tabla dinámica con soporte para paginación, carga de datos y acciones sobre cada registro. Esta componente permite reutilizar una misma estructura para listar diferentes tipos de entidades, como usuarios, productos o clientes, evitando duplicar código y facilitando el mantenimiento de la aplicación. 
 Entre los atributos de entrada (`@Input`) más importantes se encuentran `columns`, que define las columnas de la tabla; `actions`, que configura los botones de acción disponibles; y `data`, que contiene los registros que serán mostrados. También incluye atributos relacionados con la paginación, como `page`, `pageSize`, `totalItems` y `externalTotalPages`, además de `loading`, utilizado para controlar el estado de carga de la información.
 Por otro lado, los atributos de salida (`@Output`) permiten la comunicación con el componente padre. El evento `pageChange` se utiliza para notificar cambios de página o de cantidad de registros por página, mientras que el evento `action` informa qué acción fue ejecutada sobre una fila específica, enviando tanto el identificador de la acción como los datos completos del registro seleccionado.
 
@@ -156,14 +360,14 @@ export class DynamicTableComponent<T extends Record<string, any>> {
 }
 ```
 
-4. Programar el archivo de html de esa componente. 
+7. Programar el archivo de html de esa componente. 
 `dynamic-table.html.ts`
 
 Este código HTML corresponde a la vista de la componente `DynamicTableComponent` y su función principal es mostrar una tabla dinámica con soporte para estados de carga, visualización de datos, acciones por fila y paginación.
 
 Inicialmente, el componente verifica si la información se encuentra cargando mediante la condición `loading`. Si el valor es verdadero, se muestra el mensaje “Cargando...”. Cuando la carga finaliza, el componente valida si existen datos en la variable `data`. Si no hay registros disponibles, se muestra el mensaje “Sin datos”.
 
-Cuando sí existen datos, se renderiza dinámicamente una tabla HTML. El encabezado de la tabla (`thead`) se construye recorriendo la colección `columns`, mostrando el nombre de cada columna mediante `c.header` y aplicando estilos personalizados con `c.class` y `c.width`. Además, si existen acciones configuradas, se agrega automáticamente una columna adicional llamada “Acciones”.
+Cuando sí existen datos, se renderiza dinámicamente una tabla HTML. El encabezado de la tabla (`thead`) se construye recorriendo la colección `columns`, mostrando el nombre de cada columna mediante `c.header` y aplicando estilos personalizados con `c.class`. Además, si existen acciones configuradas, se agrega automáticamente una columna adicional llamada “Acciones”.
 
 En el cuerpo de la tabla (`tbody`), el componente recorre cada registro de `data` y genera una fila por cada elemento. Posteriormente, recorre nuevamente las columnas definidas para mostrar los valores correspondientes mediante el método `getValue(row, c.key)`, permitiendo acceder dinámicamente a la información de cada propiedad.
 
@@ -199,7 +403,7 @@ Cada cambio de página o tamaño de paginación emite eventos hacia el component
         <thead class="bg-gray-50">
             <tr>
                 @for (c of columns; track $index) {
-                <th [ngClass]="c.class" [style.width]="c.width"
+                <th [ngClass]="c.class"
                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {{ c.header }}
                 </th>
@@ -228,7 +432,7 @@ Cada cambio de página o tamaño de paginación emite eventos hacia el component
                     <button type="button" (click)="onActionClick(a.id, row)"
                         [ngClass]="a.class || 'mr-2 px-2 py-1 rounded bg-gray-100 hover:bg-gray-200'">
                         @if (a.icon) {
-                        <span class="mr-1">{{ a.icon }}</span>
+                        <ng-icon [name]="a.icon" class="inline-block w-4 h-4 mr-1 align-text-bottom"></ng-icon>
                         }
 
                         {{ a.label }}
@@ -285,202 +489,7 @@ Cada cambio de página o tamaño de paginación emite eventos hacia el component
 </div>
 }
 ```
-5. Para consumir ahora datos desde una api, y verlos en la componente dimámica, primero se debe configurar la variable de entorno.
 
-Crear dentro de src/environments/environments.ts
-
-``` typescript
-export const environment = {
-    production: false,
-    apiUrl: 'http://127.0.0.1:5000'
-};
-```
-
-6. Luego será necesario crear un servicio para hacer la conexión con el backend
-
-``` sh
-ng g service services/users
-```
-
-Internamente debe de tener el siguiente código
-
-``` typescript
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
-import { environment } from '../../environments/environment';
-import { User } from '../models/user';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class UsersService {
-
-  private readonly apiUrl = `${environment.apiUrl}/users`;
-
-  constructor(private http: HttpClient) {}
-
-  /**
-   * Obtener todos los usuarios
-   * GET /users
-   */
-  getAll(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl);
-  }
-
-  /**
-   * Obtener usuarios paginados
-   * GET /users?page=&pageSize=
-   */
-  getPaged(page: number, pageSize: number): Observable<{
-    data: User[];
-    page: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-  }> {
-    const params = new HttpParams()
-      .set('page', String(page))
-      .set('pageSize', String(pageSize));
-    return this.http.get<{
-      data: User[];
-      page: number;
-      pageSize: number;
-      totalItems: number;
-      totalPages: number;
-    }>(this.apiUrl, { params });
-  }
-
-  /**
-   * Obtener usuario por ID
-   * GET /users/:id
-   */
-  getById(id: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`);
-  }
-
-  /**
-   * Crear usuario
-   * POST /users
-   */
-  create(user: Omit<User, 'id'>): Observable<User> {
-    return this.http.post<User>(this.apiUrl, user);
-  }
-
-  /**
-   * Actualizar usuario completo
-   * PUT /users/:id
-   */
-  update(id: number, user: User): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/${id}`, user);
-  }
-
-  /**
-   * Eliminar usuario
-   * DELETE /users/:id
-   */
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-}
-```
-
-7. Posteriormente se debe programar en el archivo `pages/users/list/listcomponent.ts`
-
-El archivo `list.component.ts` define el componente `ListComponent`, cuya función principal es consumir la información de usuarios desde el servicio `UsersService` y mostrarla utilizando la componente reutilizable `DynamicTableComponent`. Este componente configura las columnas de la tabla, las acciones disponibles por fila y controla la paginación de los datos.
-
-Además, administra el estado de carga (`loading`), obtiene los usuarios desde la API mediante el método `loadUsers`, y responde a los eventos emitidos por la tabla, como cambios de página (`onPageChange`) o acciones ejecutadas sobre un registro (`onTableAction`), permitiendo manejar operaciones como ver, editar o eliminar usuarios.
-
-
-``` typescript
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { UsersService } from 'src/app/services/users.service';
-import { User } from 'src/app/models/user';
-import { DynamicTableComponent} from 'src/app/components/ui/table/dynamic-table/dynamic-table.component';
-import { ColumnDef } from 'src/app/models/component-dynamic-table/column-def';
-import { ActionButton } from 'src/app/models/component-dynamic-table/action-button';
-import { TablePageEvent } from 'src/app/models/component-dynamic-table/table-page-event';
-
-@Component({
-  selector: 'app-list',
-  standalone: true,
-  imports: [CommonModule, DynamicTableComponent],
-  templateUrl: './list.component.html',
-  styleUrl: './list.component.scss',
-})
-export class ListComponent implements OnInit {
-
-  users: User[] = [];
-  loading = false;
-
-  page = 1;
-  pageSize = 5;
-  total = 0;
-  totalPages = 1;
-
-  columns: ColumnDef[] = [
-    { header: 'ID', key: 'id' },
-    { header: 'Nombre', key: 'name' },
-    { header: 'Usuario', key: 'username' },
-    { header: 'Email', key: 'email' },
-  ];
-
-  actions: ActionButton[] = [
-    { id: 'view', label: 'Ver', class: 'px-2 py-1 mr-2 rounded bg-blue-500 text-white' },
-    { id: 'edit', label: 'Editar', class: 'px-2 py-1 mr-2 rounded bg-yellow-400 text-black' },
-    { id: 'delete', label: 'Eliminar', class: 'px-2 py-1 rounded bg-red-500 text-white' },
-  ];
-
-  constructor(private usersService: UsersService) {}
-
-  ngOnInit(): void {
-    this.loadUsers();
-  }
-
-  loadUsers(page = this.page, pageSize = this.pageSize): void {
-    this.loading = true;
-    this.usersService.getPaged(page, pageSize).subscribe({
-      next: (resp) => {
-        this.users = resp.data || [];
-        this.page = resp.page || page;
-        this.pageSize = resp.pageSize || pageSize;
-        this.total = resp.totalItems ?? this.users.length;
-        this.totalPages = resp.totalPages ?? Math.max(1, Math.ceil(this.total / this.pageSize));
-        this.loading = false;
-      },
-      error: () => {
-        this.users = [];
-        this.total = 0;
-        this.totalPages = 1;
-        this.loading = false;
-      }
-    });
-  }
-  onPageChange(event: TablePageEvent): void {
-    this.page = event.page;
-    this.pageSize = event.pageSize;
-    console.log('Página cambiada:', event);
-    this.loadUsers(this.page, this.pageSize);
-  }
-
-  onTableAction(event: { actionId: string; row: User }): void {
-    const { actionId, row } = event;
-    // Manejar acciones desde el componente padre
-    if (actionId === 'view') {
-      console.log('Ver', row);
-    } else if (actionId === 'edit') {
-      console.log('Editar', row);
-    } else if (actionId === 'delete') {
-      console.log('Eliminar', row);
-    } else {
-      console.log('Acción desconocida', actionId, row);
-    }
-  }
-
-}
-```
 8. Por último se debe programar el `pages/users/list.component.html` con el siguiente contenido
 
 ``` html
