@@ -1,0 +1,14 @@
+<!-- user-form.component.html -->
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h2>{{ isEditMode ? 'Editar usuario' : 'Crear usuario' }}</h2>
+
+    <input formControlName="name" placeholder="Nombre" />
+    <input formControlName="username" placeholder="Username" />
+    <input formControlName="email" placeholder="Email" type="email" />
+    <input formControlName="phone" placeholder="Teléfono" />
+    <input formControlName="website" placeholder="Sitio web" />
+
+    <button type="submit" [disabled]="form.invalid">
+        {{ isEditMode ? 'Actualizar' : 'Crear' }}
+    </button>
+</form>
