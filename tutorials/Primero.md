@@ -1,5 +1,5 @@
 
-# Guia Angular
+# Clase 1 Principios Básicos
 
 1. Instalar Angular
 ```sh

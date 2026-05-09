@@ -1,3 +1,5 @@
+# Clase 2 Tabla Genérica
+
 1. Para consumir ahora datos desde una api, y verlos en la componente dimámica, primero se debe configurar la variable de entorno.
 
 Crear dentro de src/environments/environments.ts
