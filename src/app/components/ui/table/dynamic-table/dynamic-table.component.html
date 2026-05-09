@@ -38,16 +38,25 @@
 
                 @if (actions && actions.length) {
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    @for (a of actions; track $index) {
-                    <button type="button" (click)="onActionClick(a.id, row)"
-                        [ngClass]="a.class || 'mr-2 px-2 py-1 rounded bg-gray-100 hover:bg-gray-200'">
-                        @if (a.icon) {
-                        <ng-icon [name]="a.icon" class="inline-block w-4 h-4 mr-1 align-text-bottom"></ng-icon>
-                        }
 
-                        {{ a.label }}
-                    </button>
-                    }
+                    <div class="flex gap-2">
+                        @for (a of actions; track $index) {
+
+                        <button type="button" (click)="onActionClick(a.id, row)"
+                            [ngClass]="a.class || 'flex-1 px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer flex items-center justify-center gap-1'">
+
+                            @if (a.icon) {
+                            <ng-icon [name]="a.icon" class="w-4 h-4">
+                            </ng-icon>
+                            }
+
+                            {{ a.label }}
+
+                        </button>
+
+                        }
+                    </div>
+
                 </td>
                 }
             </tr>

@@ -157,7 +157,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UsersService } from 'src/app/services/users.service';
 import { User } from 'src/app/models/user';
-import { DynamicTableComponent} from 'src/app/components/ui/table/dynamic-table/dynamic-table.component';
+import { DynamicTableComponent } from 'src/app/components/ui/table/dynamic-table/dynamic-table.component';
 import { ColumnDef } from 'src/app/models/component-dynamic-table/column-def';
 import { ActionButton } from 'src/app/models/component-dynamic-table/action-button';
 import { TablePageEvent } from 'src/app/models/component-dynamic-table/table-page-event';
@@ -187,12 +187,27 @@ export class ListComponent implements OnInit {
   ];
 
   actions: ActionButton[] = [
-    { id: 'view', label: 'Ver',icon: 'eye'  ,class: 'px-2 py-1 mr-2 rounded bg-blue-500 text-white'},
-    { id: 'edit', label: 'Editar', icon: 'pencil',class: 'px-2 py-1 mr-2 rounded bg-yellow-400 text-black'},
-    { id: 'delete', label: 'Eliminar', icon: 'trash',class: 'px-2 py-1 rounded bg-red-500 text-white' },
+    {
+      id: 'view',
+      label: 'Ver',
+      icon: 'heroEye',
+      class: 'flex-1 px-2 py-1 rounded bg-blue-500 text-white cursor-pointer flex items-center justify-center gap-1'
+    },
+    {
+      id: 'edit',
+      label: 'Editar',
+      icon: 'heroPencil',
+      class: 'flex-1 px-2 py-1 rounded bg-yellow-400 text-black cursor-pointer flex items-center justify-center gap-1'
+    },
+    {
+      id: 'delete',
+      label: 'Eliminar',
+      icon: 'heroTrash',
+      class: 'flex-1 px-2 py-1 rounded bg-red-500 text-white cursor-pointer flex items-center justify-center gap-1'
+    }
   ];
 
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -260,13 +275,19 @@ import { CommonModule } from '@angular/common';
 import { ColumnDef } from 'src/app/models/component-dynamic-table/column-def';
 import { ActionButton } from 'src/app/models/component-dynamic-table/action-button';
 import { TablePageEvent } from 'src/app/models/component-dynamic-table/table-page-event';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import * as heroIcons from '@ng-icons/heroicons/outline';
+
 
 @Component({
   selector: 'app-dynamic-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,NgIcon],
   templateUrl: './dynamic-table.component.html',
   styleUrls: ['./dynamic-table.component.scss'],
+  viewProviders: [
+    provideIcons(heroIcons)
+  ],
 })
 export class DynamicTableComponent<T extends Record<string, any>> {
   @Input() columns: ColumnDef[] = [];
@@ -428,16 +449,25 @@ Cada cambio de página o tamaño de paginación emite eventos hacia el component
 
                 @if (actions && actions.length) {
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    @for (a of actions; track $index) {
-                    <button type="button" (click)="onActionClick(a.id, row)"
-                        [ngClass]="a.class || 'mr-2 px-2 py-1 rounded bg-gray-100 hover:bg-gray-200'">
-                        @if (a.icon) {
-                        <ng-icon [name]="a.icon" class="inline-block w-4 h-4 mr-1 align-text-bottom"></ng-icon>
-                        }
 
-                        {{ a.label }}
-                    </button>
-                    }
+                    <div class="flex gap-2">
+                        @for (a of actions; track $index) {
+
+                        <button type="button" (click)="onActionClick(a.id, row)"
+                            [ngClass]="a.class || 'flex-1 px-2 py-1 rounded bg-gray-100 hover:bg-gray-200 cursor-pointer flex items-center justify-center gap-1'">
+
+                            @if (a.icon) {
+                            <ng-icon [name]="a.icon" class="w-4 h-4">
+                            </ng-icon>
+                            }
+
+                            {{ a.label }}
+
+                        </button>
+
+                        }
+                    </div>
+
                 </td>
                 }
             </tr>
@@ -489,6 +519,9 @@ Cada cambio de página o tamaño de paginación emite eventos hacia el component
 </div>
 }
 ```
+![PruebaEscritorio1](images/PruebaEscritorioDatos.png)
+
+![PruebaEscritorio2](images/PruebaEscritorioBotones.png)
 
 8. Por último se debe programar el `pages/users/list.component.html` con el siguiente contenido
 

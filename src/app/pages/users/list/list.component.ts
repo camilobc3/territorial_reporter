@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UsersService } from 'src/app/services/users.service';
 import { User } from 'src/app/models/user';
-import { DynamicTableComponent} from 'src/app/components/ui/table/dynamic-table/dynamic-table.component';
+import { DynamicTableComponent } from 'src/app/components/ui/table/dynamic-table/dynamic-table.component';
 import { ColumnDef } from 'src/app/models/component-dynamic-table/column-def';
 import { ActionButton } from 'src/app/models/component-dynamic-table/action-button';
 import { TablePageEvent } from 'src/app/models/component-dynamic-table/table-page-event';
@@ -32,12 +32,27 @@ export class ListComponent implements OnInit {
   ];
 
   actions: ActionButton[] = [
-    { id: 'view', label: 'Ver',icon: 'eye'  ,class: 'px-2 py-1 mr-2 rounded bg-blue-500 text-white'},
-    { id: 'edit', label: 'Editar', icon: 'pencil',class: 'px-2 py-1 mr-2 rounded bg-yellow-400 text-black'},
-    { id: 'delete', label: 'Eliminar', icon: 'trash',class: 'px-2 py-1 rounded bg-red-500 text-white' },
+    {
+      id: 'view',
+      label: 'Ver',
+      icon: 'heroEye',
+      class: 'flex-1 px-2 py-1 rounded bg-blue-500 text-white cursor-pointer flex items-center justify-center gap-1'
+    },
+    {
+      id: 'edit',
+      label: 'Editar',
+      icon: 'heroPencil',
+      class: 'flex-1 px-2 py-1 rounded bg-yellow-400 text-black cursor-pointer flex items-center justify-center gap-1'
+    },
+    {
+      id: 'delete',
+      label: 'Eliminar',
+      icon: 'heroTrash',
+      class: 'flex-1 px-2 py-1 rounded bg-red-500 text-white cursor-pointer flex items-center justify-center gap-1'
+    }
   ];
 
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   ngOnInit(): void {
     this.loadUsers();

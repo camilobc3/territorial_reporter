@@ -3,13 +3,19 @@ import { CommonModule } from '@angular/common';
 import { ColumnDef } from 'src/app/models/component-dynamic-table/column-def';
 import { ActionButton } from 'src/app/models/component-dynamic-table/action-button';
 import { TablePageEvent } from 'src/app/models/component-dynamic-table/table-page-event';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import * as heroIcons from '@ng-icons/heroicons/outline';
+
 
 @Component({
   selector: 'app-dynamic-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,NgIcon],
   templateUrl: './dynamic-table.component.html',
   styleUrls: ['./dynamic-table.component.scss'],
+  viewProviders: [
+    provideIcons(heroIcons)
+  ],
 })
 export class DynamicTableComponent<T extends Record<string, any>> {
   @Input() columns: ColumnDef[] = [];
