@@ -6,7 +6,8 @@ import { DynamicTableComponent } from 'src/app/components/ui/table/dynamic-table
 import { ColumnDef } from 'src/app/models/component-dynamic-table/column-def';
 import { ActionButton } from 'src/app/models/component-dynamic-table/action-button';
 import { TablePageEvent } from 'src/app/models/component-dynamic-table/table-page-event';
-
+import Swal from 'sweetalert2';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-list',
   standalone: true,
@@ -52,7 +53,9 @@ export class ListComponent implements OnInit {
     }
   ];
 
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService,
+              private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -91,11 +94,33 @@ export class ListComponent implements OnInit {
       console.log('Ver', row);
     } else if (actionId === 'edit') {
       console.log('Editar', row);
+      this.router.navigate([`/users/update/${row.id}`]);
     } else if (actionId === 'delete') {
       console.log('Eliminar', row);
+      this.delete(row);
     } else {
       console.log('Acción desconocida', actionId, row);
     }
   }
-
+  delete(user: User): void {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: `¿Quieres eliminar al usuario "${user.name}"? Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.usersService.delete(user.id ? user.id : 0).subscribe({
+          next: () => {
+            Swal.fire('Eliminado', `El usuario "${user.name}" ha sido eliminado.`, 'success');
+            this.loadUsers();
+          }
+        });
+      }
+    });
+  }
 }
