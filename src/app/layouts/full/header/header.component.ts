@@ -4,8 +4,13 @@ import {
   EventEmitter,
   Input,
   ViewEncapsulation,
+  OnInit,
+  OnDestroy,
 } from '@angular/core';
 import { CoreService } from 'src/app/services/core.service';
+import { SecurityService } from 'src/app/services/security.service';
+import { Subscription } from 'rxjs';
+import { User } from 'src/app/models/user';
 import { MatDialog } from '@angular/material/dialog';
 import { navItems } from '../sidebar/sidebar-data';
 import { TranslateService } from '@ngx-translate/core';
@@ -43,7 +48,7 @@ interface profiledd {
   templateUrl: './header.component.html',
   encapsulation: ViewEncapsulation.None
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit, OnDestroy {
   @Input() showToggle = true;
   @Input() toggleChecked = false;
   @Output() toggleMobileNav = new EventEmitter<void>();
@@ -58,12 +63,30 @@ export class HeaderComponent {
     private settings: CoreService,
     private vsidenav: CoreService,
     public dialog: MatDialog,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private securityService: SecurityService
   ) {
     translate.setDefaultLang('en');
   }
 
+  user: User | null = null;
+  private userSubscription?: Subscription;
+
+  ngOnInit(): void {
+    this.userSubscription = this.securityService
+      .getCurrentUser()
+      .subscribe((user) => {
+        this.user = user;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.userSubscription?.unsubscribe();
+  }
+
   options = this.settings.getOptions();
+
+  // removed currentUser$ — using direct subscription to set `user`
 
   private emitOptions() {
     this.optionsChange.emit(this.options);
