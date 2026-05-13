@@ -16,10 +16,7 @@ export class SecurityService {
 
   constructor(private http: HttpClient) { }
 
-  /** Devuelve el observable público del usuario actual */
-  public getCurrentUser(): Observable<User | null> {
-    return this.currentUserSubject.asObservable();
-  }
+
 
   login(user: User): Observable<any> {
     const url = `${this.api}/api/auth/login`;
@@ -53,7 +50,14 @@ export class SecurityService {
     return this.http.get<User>(url, { withCredentials: true });
   }
 
+  /** Devuelve el observable público del usuario actual */
+  public getCurrentUser(): Observable<User | null> {
+    return this.currentUserSubject.asObservable();
+  }
+
+
   setUser(user: User | null) {
+    console.log('🔐 Estableciendo usuario actual:', user);
     this.currentUserSubject.next(user);
   }
 

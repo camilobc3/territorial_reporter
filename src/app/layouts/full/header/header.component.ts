@@ -76,6 +76,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.userSubscription = this.securityService
       .getCurrentUser()
       .subscribe((user) => {
+        console.log('👤 Usuario actual en HeaderComponent:', user);
         this.user = user;
       });
   }
