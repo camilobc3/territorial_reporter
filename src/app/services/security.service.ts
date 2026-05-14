@@ -4,7 +4,6 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environments';
 import { User } from '../models/user';
-import { IStorageService } from './storage/storage.service.interface';
 import { StorageService } from './storage/storage.service';
 
 @Injectable({
@@ -31,6 +30,16 @@ export class SecurityService {
     }
   }
 
+  /**
+   * Este método realiza el proceso de login:
+   * 1. Envía las credenciales al backend para autenticación.
+   * 2. Si el login es exitoso, llama a /me para obtener los datos del usuario actual.
+   * 3. Actualiza el estado del usuario en el servicio y lo persiste en storage.
+   * Es importante que el backend esté configurado para manejar sesiones (por ejemplo, con cookies)
+   * y que el endpoint /me valide la sesión y devuelva el usuario correspondiente.
+   * @param user 
+   * @returns 
+   */
 
 
   login(user: User): Observable<any> {
@@ -53,12 +62,28 @@ export class SecurityService {
     );
   }
 
+  /**
+   * Este método realiza el proceso de logout:
+   * 1. Llama al endpoint de logout en el backend para invalidar la sesión.
+   * 2. Limpia el estado del usuario en el servicio y en el storage.
+   * Es importante que el backend maneje correctamente la invalidación de la sesión (por ejemplo, eliminando la cookie).
+   * @returns 
+   */
   logout(): Observable<any> {
     const url = `${this.api}/api/auth/logout`;
     return this.http.post(url, {}, { withCredentials: true }).pipe(
       tap(() => this.clearUser())
     );
   }
+
+  /**
+   * Llama al endpoint /me para obtener los datos del usuario actual. 
+   * Se espera que el backend valide la sesión
+   * y devuelva el usuario correspondiente o un error si no hay sesión válida.
+   * La cookie de sesión debe ser enviada automáticamente por el navegador
+   * debido a { withCredentials: true }.
+   * @returns 
+   */
 
   me(): Observable<User> {
     const url = `${this.api}/api/auth/me`;
@@ -70,11 +95,20 @@ export class SecurityService {
     return this.currentUserSubject.asObservable();
   }
 
+  /**
+   * Actualiza el estado del usuario actual en el servicio y lo persiste en storage.
+   * Este método se llama después de un login exitoso para establecer el usuario actual,
+   * o después de un logout para limpiar el usuario.
+   * Es importante no almacenar la contraseña en el storage por razones de seguridad.
+   * @param user 
+   */
 
   setUser(user: User | null) {
     console.log('🔐 Estableciendo usuario actual:', user);
     this.currentUserSubject.next(user);
     // Persistir en storage (no almacenar password)
+    // Si no guardo al usuario en local storage, cada vez que recargue la página 
+    // se perderá la información del usuario actual
     try {
       if (user) {
         const copy: any = { ...user };
