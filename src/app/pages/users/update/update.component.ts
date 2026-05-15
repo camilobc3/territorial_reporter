@@ -11,7 +11,7 @@ import { User } from 'src/app/models/user';
   styleUrl: './update.component.scss',
 })
 export class UpdateComponent implements OnInit {
-  user?: User;
+  user: User;
   private id!: number;
 
   constructor(

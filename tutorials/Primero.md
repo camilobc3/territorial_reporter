@@ -69,6 +69,7 @@ export interface User {
     email?: string;
     phone?: string;
     website?: string;
+    password?: string;
 }
 ```
 6. Programar el controlador de listar usuarios.

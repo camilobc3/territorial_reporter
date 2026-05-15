@@ -71,6 +71,8 @@ export class StorageService implements IStorageService {
 ng g s services/Security
 ```
 
+![AnalogíaSatélite](images/PatronObserver.png)
+
 Que tendrá el siguiente código:
 
 ``` typescript

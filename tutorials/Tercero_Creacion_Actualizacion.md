@@ -5,6 +5,8 @@ ng g c pages/users/components/user-form --standalone --skip-tests
 
 Programar en el controlador de la components `pages/users/components/user-form/user-form.component.ts`
 
+![AnalogíaSatélite](images/FormGroup_Validator.png)
+
 ``` typescript
 // user-form.component.ts
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
