@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
+import { AuthenticatedGuard } from './guards/authenticated.guard';
 
 export const routes: Routes = [
   {
@@ -31,6 +32,7 @@ export const routes: Routes = [
       },
       {
         path: 'users',
+        canActivateChild: [AuthenticatedGuard],
         loadChildren: () =>
           import('./pages/users/users.routes').then((m) => m.UserRoutes),
       }

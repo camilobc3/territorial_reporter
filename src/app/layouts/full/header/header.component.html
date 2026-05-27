@@ -33,7 +33,7 @@
   <!-- --------------------------------------------------------------- -->
   <!-- Notification Dropdown -->
   <!-- --------------------------------------------------------------- -->
-  <button mat-icon-button matBadge="5" [matMenuTriggerFor]="notificationmenu" aria-label="Notifications"
+  <button mat-icon-button [matBadge]="notifications.length" [matMenuTriggerFor]="notificationmenu" aria-label="Notifications"
     class="notification-badge">
     <i class="iconify" data-icon="solar:bell-line-duotone"></i>
   </button>

@@ -16,6 +16,8 @@ import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
 import { navItems } from './sidebar/sidebar-data';
+import { User } from 'src/app/models/user';
+import { SecurityService } from 'src/app/services/security.service';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -181,12 +183,17 @@ export class FullComponent implements OnInit {
     },
   ];
 
+  user: User | null = null;
+  private userSubscription?: Subscription;
+
+
   constructor(
     private settings: CoreService,
     private mediaMatcher: MediaMatcher,
     private router: Router,
     private breakpointObserver: BreakpointObserver,
-    private navService: NavService, private cdr: ChangeDetectorRef
+    private navService: NavService, private cdr: ChangeDetectorRef,
+    private securityService: SecurityService
   ) {
     this.htmlElement = document.querySelector('html')!;
     this.layoutChangesSubscription = this.breakpointObserver
@@ -221,7 +228,15 @@ export class FullComponent implements OnInit {
     this.cdr.detectChanges(); // Ensures Angular updates the view
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.userSubscription = this.securityService
+      .getCurrentUser()
+      .subscribe((user) => {
+        console.log('👤 Usuario actual en HeaderComponent:', user);
+        this.user = user;
+      });
+
+  }
 
   ngOnDestroy() {
     this.layoutChangesSubscription.unsubscribe();
