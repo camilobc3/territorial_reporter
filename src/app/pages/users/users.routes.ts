@@ -3,6 +3,7 @@ import { ListComponent } from './list/list.component';
 import { CreateComponent } from './create/create.component';
 import { UpdateComponent } from './update/update.component';
 
+// hola
 
 export const UserRoutes: Routes = [
     {
