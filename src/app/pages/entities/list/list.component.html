@@ -1,0 +1,12 @@
+<app-dynamic-table
+  [data]="entities"
+  [columns]="columns"
+  [actions]="actions"
+  [loading]="loading"
+  [page]="page"
+  [pageSize]="pageSize"
+  [totalItems]="total"
+  [totalPages]="totalPages"
+  (pageChange)="onPageChange($event)"
+  (action)="onTableAction($event)">
+</app-dynamic-table>

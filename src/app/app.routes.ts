@@ -24,6 +24,11 @@ export const routes: Routes = [
           import('./pages/geography/geography.routes').then((m) => m.GeographyRoutes)
       },
       {
+        path: 'entity',
+        loadChildren: () =>
+          import('./pages/entities/entities.routes').then((m) => m.EntityRoutes)
+      },
+      {
         path: 'ui-components',
         loadChildren: () =>
           import('./pages/ui-components/ui-components.routes').then(
