@@ -19,11 +19,6 @@ export const routes: Routes = [
           import('./pages/pages.routes').then((m) => m.PagesRoutes),
       },
       {
-        path: 'geography',
-        loadChildren: () =>
-          import('./pages/geography/geography.routes').then((m) => m.GeographyRoutes)
-      },
-      {
         path: 'entity',
         loadChildren: () =>
           import('./pages/entities/entities.routes').then((m) => m.EntityRoutes)
