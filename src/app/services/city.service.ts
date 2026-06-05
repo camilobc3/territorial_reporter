@@ -11,6 +11,10 @@ export class CityService {
 
   constructor(private http: HttpClient) {}
 
+  getAll(): Observable<City[]> {
+    return this.http.get<City[]>(this.apiUrl);
+  }
+
   getPaged(page: number, pageSize: number, idDepartment?: number): Observable<{
     data: City[];
     page: number;

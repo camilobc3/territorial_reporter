@@ -25,9 +25,9 @@ export class DepartmentListComponent implements OnInit {
   totalPages = 1;
 
   columns: ColumnDef[] = [
-    { header: 'ID',          key: 'id_department' },
-    { header: 'Nombre',      key: 'name'          },
-    { header: 'Código DANE', key: 'dane_code'     },
+    { header: 'ID', key: 'id_department' },
+    { header: 'Nombre', key: 'name' },
+    { header: 'Código DANE', key: 'dane_code' },
   ];
 
   actions: ActionButton[] = [
@@ -60,40 +60,48 @@ export class DepartmentListComponent implements OnInit {
     this.loadDepartments();
   }
 
-  loadDepartments(page = this.page, pageSize = this.pageSize): void {
+  loadDepartments(): void {
     this.loading = true;
-    this.departmentService.getPaged(page, pageSize).subscribe({
+
+    this.departmentService.getAll().subscribe({
       next: (resp) => {
-        this.departments = resp.data ?? [];
-        this.page       = resp.page ?? page;
-        this.pageSize   = resp.pageSize ?? pageSize;
-        this.total      = resp.totalItems ?? this.departments.length;
-        this.totalPages = resp.totalPages ?? Math.max(1, Math.ceil(this.total / this.pageSize));
-        this.loading    = false;
+        console.log('Departamentos:', resp);
+
+        this.departments = resp;
+        this.total = resp.length;
+        this.totalPages = 1;
+        this.loading = false;
       },
-      error: () => {
+      error: (err) => {
+        console.error(err);
+
         this.departments = [];
-        this.total       = 0;
-        this.totalPages  = 1;
-        this.loading     = false;
+        this.total = 0;
+        this.totalPages = 1;
+        this.loading = false;
       },
     });
   }
 
   onPageChange(event: TablePageEvent): void {
-    this.page     = event.page;
+    this.page = event.page;
     this.pageSize = event.pageSize;
-    this.loadDepartments(this.page, this.pageSize);
+
+    // Como usamos getAll(), simplemente recargamos
+    this.loadDepartments();
   }
 
   onTableAction(event: { actionId: string; row: Department }): void {
     const { actionId, row } = event;
+
     if (actionId === 'cities') {
       this.router.navigate(['/geography/cities/list'], {
         queryParams: { id_department: row.id_department },
       });
     } else if (actionId === 'edit') {
-      this.router.navigate([`/geography/departments/update/${row.id_department}`]);
+      this.router.navigate([
+        `/geography/departments/update/${row.id_department}`,
+      ]);
     } else if (actionId === 'delete') {
       this.delete(row);
     }
@@ -113,7 +121,12 @@ export class DepartmentListComponent implements OnInit {
       if (result.isConfirmed) {
         this.departmentService.delete(department.id_department!).subscribe({
           next: () => {
-            Swal.fire('Eliminado', `El departamento "${department.name}" fue eliminado.`, 'success');
+            Swal.fire(
+              'Eliminado',
+              `El departamento "${department.name}" fue eliminado.`,
+              'success'
+            );
+
             this.loadDepartments();
           },
         });

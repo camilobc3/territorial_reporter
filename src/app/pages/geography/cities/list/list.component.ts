@@ -31,10 +31,10 @@ export class CityListComponent implements OnInit {
   departments: Department[] = [];
 
   columns: ColumnDef[] = [
-    { header: 'ID',           key: 'id_city'        },
-    { header: 'Nombre',       key: 'name'            },
-    { header: 'Código DANE',  key: 'dane_code'       },
-    { header: 'Departamento', key: 'id_department'   },
+    { header: 'ID', key: 'id_city' },
+    { header: 'Nombre', key: 'name' },
+    { header: 'Código DANE', key: 'dane_code' },
+    { header: 'Departamento', key: 'id_department' },
   ];
 
   actions: ActionButton[] = [
@@ -61,33 +61,52 @@ export class CityListComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
-      this.selectedDepartmentId = params['id_department'] ? Number(params['id_department']) : undefined;
+      this.selectedDepartmentId = params['id_department']
+        ? Number(params['id_department'])
+        : undefined;
+
       this.loadCities();
     });
 
     this.departmentService.getAll().subscribe({
       next: (data: any) => {
-        this.departments = Array.isArray(data) ? data : (data.data ?? []);
+        this.departments = Array.isArray(data)
+          ? data
+          : (data.data ?? []);
       },
+      error: (err: any) => {
+        console.error(err);
+      }
     });
   }
 
-  loadCities(page = this.page, pageSize = this.pageSize): void {
+  loadCities(): void {
     this.loading = true;
-    this.cityService.getPaged(page, pageSize, this.selectedDepartmentId).subscribe({
-      next: (resp) => {
-        this.cities     = resp.data ?? [];
-        this.page       = resp.page ?? page;
-        this.pageSize   = resp.pageSize ?? pageSize;
-        this.total      = resp.totalItems ?? this.cities.length;
-        this.totalPages = resp.totalPages ?? Math.max(1, Math.ceil(this.total / this.pageSize));
-        this.loading    = false;
-      },
-      error: () => {
-        this.cities     = [];
-        this.total      = 0;
+
+    this.cityService.getAll().subscribe({
+      next: (resp: any) => {
+        let cities = Array.isArray(resp) ? resp : [];
+
+        if (this.selectedDepartmentId) {
+          cities = cities.filter(
+            city => city.id_department === this.selectedDepartmentId
+          );
+        }
+
+        this.cities = cities;
+        this.total = cities.length;
         this.totalPages = 1;
-        this.loading    = false;
+        this.loading = false;
+
+        console.log('Cities:', this.cities);
+      },
+      error: (err: any) => {
+        console.error(err);
+
+        this.cities = [];
+        this.total = 0;
+        this.totalPages = 1;
+        this.loading = false;
       },
     });
   }
@@ -95,21 +114,28 @@ export class CityListComponent implements OnInit {
   onDepartmentChange(idDepartment: number | undefined): void {
     this.selectedDepartmentId = idDepartment;
     this.page = 1;
+
     this.router.navigate([], {
-      queryParams: idDepartment ? { id_department: idDepartment } : {},
+      queryParams: idDepartment
+        ? { id_department: idDepartment }
+        : {},
     });
   }
 
   onPageChange(event: TablePageEvent): void {
-    this.page     = event.page;
+    this.page = event.page;
     this.pageSize = event.pageSize;
-    this.loadCities(this.page, this.pageSize);
+
+    this.loadCities();
   }
 
   onTableAction(event: { actionId: string; row: City }): void {
     const { actionId, row } = event;
+
     if (actionId === 'edit') {
-      this.router.navigate([`/geography/cities/update/${row.id_city}`]);
+      this.router.navigate([
+        `/geography/cities/update/${row.id_city}`,
+      ]);
     } else if (actionId === 'delete') {
       this.delete(row);
     }
@@ -129,9 +155,17 @@ export class CityListComponent implements OnInit {
       if (result.isConfirmed) {
         this.cityService.delete(city.id_city!).subscribe({
           next: () => {
-            Swal.fire('Eliminada', `La ciudad "${city.name}" fue eliminada.`, 'success');
+            Swal.fire(
+              'Eliminada',
+              `La ciudad "${city.name}" fue eliminada.`,
+              'success'
+            );
+
             this.loadCities();
           },
+          error: (err: any) => {
+            console.error(err);
+          }
         });
       }
     });
