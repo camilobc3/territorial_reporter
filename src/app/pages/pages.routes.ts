@@ -18,5 +18,9 @@ export const PagesRoutes: Routes = [
     path: 'users',
     canActivate: [AuthenticatedGuard],
     loadChildren: () => import('./users/users.routes').then((m) => m.UserRoutes)
+  },
+  {
+    path: 'geography',
+    loadChildren: () => import('./geography/geography.routes').then((m) => m.GeographyRoutes )
   }
 ];

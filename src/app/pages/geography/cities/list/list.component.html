@@ -1,0 +1,32 @@
+<div class="flex items-center justify-between mb-4">
+  <h2 class="text-xl font-semibold">Ciudades</h2>
+  <a routerLink="/geography/cities/create" mat-flat-button color="primary">
+    + Nueva ciudad
+  </a>
+</div>
+
+<!-- Filtro por departamento -->
+<div class="mb-4 flex items-center gap-4">
+  <mat-form-field appearance="outline" class="w-72">
+    <mat-label>Filtrar por departamento</mat-label>
+    <mat-select [value]="selectedDepartmentId" (selectionChange)="onDepartmentChange($event.value)">
+      <mat-option [value]="undefined">Todos</mat-option>
+      @for (dep of departments; track dep.id_department) {
+        <mat-option [value]="dep.id_department">{{ dep.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<app-dynamic-table
+  [data]="cities"
+  [columns]="columns"
+  [actions]="actions"
+  [loading]="loading"
+  [totalItems]="total"
+  [totalPages]="totalPages"
+  [page]="page"
+  [pageSize]="pageSize"
+  (pageChange)="onPageChange($event)"
+  (action)="onTableAction($event)">
+</app-dynamic-table>
