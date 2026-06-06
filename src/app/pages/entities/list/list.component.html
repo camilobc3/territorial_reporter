@@ -1,12 +1,145 @@
-<app-dynamic-table
-  [data]="entities"
-  [columns]="columns"
-  [actions]="actions"
-  [loading]="loading"
-  [page]="page"
-  [pageSize]="pageSize"
-  [totalItems]="total"
-  [totalPages]="totalPages"
-  (pageChange)="onPageChange($event)"
-  (action)="onTableAction($event)">
-</app-dynamic-table>
+<!-- list.component.html -->
+<div class="relative">
+
+  <mat-card class="cardWithShadow">
+    <mat-card-content>
+
+      <!-- Encabezado -->
+      <div class="flex items-start justify-between mb-1">
+        <div>
+          <mat-card-title>Entidades registradas</mat-card-title>
+          <mat-card-subtitle>Consulta, edita o elimina las entidades del sistema.</mat-card-subtitle>
+        </div>
+        <button mat-flat-button color="primary" (click)="openCreate()">
+          <mat-icon>add</mat-icon>
+          Nueva entidad
+        </button>
+      </div>
+
+      <!-- Buscador -->
+      <div class="mt-4 mb-4">
+        <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
+          <mat-icon matPrefix class="flex items-center">search</mat-icon>
+          <input matInput placeholder="Buscar por nombre..." [(ngModel)]="searchText" />
+        </mat-form-field>
+      </div>
+
+      <!-- Tabla -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Logo</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Dirección</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-100">
+            @if (loading) {
+              <tr>
+                <td colspan="5" class="px-4 py-8 text-center">
+                  <mat-spinner diameter="32" class="mx-auto"></mat-spinner>
+                </td>
+              </tr>
+            } @else if (entities.length === 0) {
+              <tr>
+                <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500">
+                  Sin entidades registradas.
+                </td>
+              </tr>
+            } @else {
+              @for (entity of filteredEntities; track entity.id_entity) {
+                <tr class="hover:bg-gray-50 transition-colors">
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="size-10 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
+                      @if (entity.logo_url) {
+                        <img [src]="apiBase + '/api/images/' + entity.logo_url"
+                          [alt]="entity.name"
+                          class="w-full h-full object-contain"
+                          (error)="onImgError($event)" />
+                      } @else {
+                        <mat-icon class="text-gray-400">business</mat-icon>
+                      }
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-sm font-semibold">{{ entity.name }}</span>
+                  </td>
+                  <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell max-w-xs">
+                    <span class="line-clamp-2">{{ entity.address || '—' }}</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    @if (entity.status === 'active') {
+                      <span class="bg-light-success text-success rounded font-semibold px-3 py-1 text-xs">Activa</span>
+                    } @else {
+                      <span class="bg-light-error text-error rounded font-semibold px-3 py-1 text-xs">Inactiva</span>
+                    }
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="flex gap-1">
+                      <button mat-icon-button (click)="openEdit(entity)" matTooltip="Editar">
+                        <mat-icon class="text-primary">edit</mat-icon>
+                      </button>
+                      <button mat-icon-button (click)="confirmDelete(entity)" matTooltip="Eliminar">
+                        <mat-icon class="text-error">delete</mat-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="flex items-center justify-between mt-4 pt-3 border-t border-border text-sm text-gray-500">
+        <span>Mostrando {{ fromItem }} a {{ toItem }} de {{ total }} entidades</span>
+        <div class="flex items-center gap-1">
+          <button mat-icon-button [disabled]="page === 1 || loading" (click)="goToPage(page - 1)">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          @for (p of pages; track p) {
+            <button
+              class="size-8 rounded text-sm font-medium"
+              [class.bg-primary]="p === page"
+              [class.text-white]="p === page"
+              [class.text-gray-600]="p !== page"
+              (click)="goToPage(p)">
+              {{ p }}
+            </button>
+          }
+          <button mat-icon-button [disabled]="page === totalPages || loading" (click)="goToPage(page + 1)">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Overlay -->
+  @if (panelOpen) {
+    <div class="fixed inset-0 bg-black/30 z-40" (click)="closePanel()"></div>
+  }
+
+  <!-- Panel lateral deslizante -->
+  <div
+    class="fixed top-0 right-0 h-full w-full sm:w-[440px] bg-white shadow-2xl z-50 flex flex-col
+           transition-transform duration-300 ease-in-out border-l border-border"
+    [class.translate-x-0]="panelOpen"
+    [class.translate-x-full]="!panelOpen">
+
+    @if (panelOpen) {
+      <app-form
+        #entityFormRef
+        [entity]="selectedEntity ?? undefined"
+        (formSubmit)="onFormSubmit($event)"
+        (cancel)="closePanel()">
+      </app-form>
+    }
+  </div>
+
+</div>

@@ -1,142 +1,175 @@
-import { Component, OnInit } from '@angular/core';
+// list.component.ts
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { MaterialModule } from 'src/app/material.module';
+import { NgScrollbarModule } from 'ngx-scrollbar';
+import { EntitiesService } from 'src/app/services/entity.service';
+import { Entity } from 'src/app/models/entity';
+import { FormComponent } from '../components/form/form.component';
+import { environment } from 'src/environments/environments';
 import Swal from 'sweetalert2';
 
-import { EntityService } from '../../../services/entity.service';
-import { Entity } from '../../../models/entity';
-
-import { DynamicTableComponent } from '../../../components/ui/table/dynamic-table/dynamic-table.component';
-
-import { ColumnDef } from '../../../models/component-dynamic-table/column-def';
-import { ActionButton } from '../../../models/component-dynamic-table/action-button';
-import { TablePageEvent } from '../../../models/component-dynamic-table/table-page-event';
-
 @Component({
-  selector: 'app-entity-list',
+  selector: 'app-entities-list',
   standalone: true,
   imports: [
     CommonModule,
-    DynamicTableComponent
+    FormsModule,
+    MaterialModule,
+    NgScrollbarModule,
+    FormComponent,
   ],
   templateUrl: './list.component.html',
 })
-export class EntityListComponent implements OnInit {
+export class ListComponent implements OnInit {
+  @ViewChild('entityFormRef') entityFormRef?: FormComponent;
 
   entities: Entity[] = [];
-
   loading = false;
+  searchText = '';
 
   page = 1;
-  pageSize = 5;
-
+  pageSize = 10;
   total = 0;
   totalPages = 1;
 
-  columns: ColumnDef[] = [
-    {
-      header: 'ID',
-      key: 'id_entity',
-    },
-    {
-      header: 'Nombre',
-      key: 'name',
-    },
-    {
-      header: 'NIT',
-      key: 'nit',
-    },
-    {
-      header: 'Correo',
-      key: 'email',
-    },
-    {
-      header: 'Estado',
-      key: 'status',
-    },
-  ];
+  panelOpen = false;
+  selectedEntity: Entity | null = null;
 
-  actions: ActionButton[] = [
-    {
-      id: 'edit',
-      label: 'Editar',
-      icon: 'heroPencil',
-      class:
-        'flex-1 px-2 py-1 rounded bg-yellow-400 text-black cursor-pointer flex items-center justify-center gap-1',
-    },
-    {
-      id: 'delete',
-      label: 'Eliminar',
-      icon: 'heroTrash',
-      class:
-        'flex-1 px-2 py-1 rounded bg-red-500 text-white cursor-pointer flex items-center justify-center gap-1',
-    },
-  ];
+  readonly apiBase = environment.apiUrl;
 
-  constructor(
-    private entityService: EntityService,
-    private router: Router
-  ) {}
+  constructor(private entitiesService: EntitiesService) {}
 
-  ngOnInit(): void {
-    this.loadEntities();
+  ngOnInit() {
+    this.load();
   }
 
-  loadEntities(): void {
-    this.loading = true;
+  // ---------- Carga ----------
 
-    this.entityService.getAll().subscribe({
-      next: (resp: Entity[]) => {
-        this.entities = resp;
-        this.total = resp.length;
-        this.totalPages = 1;
-        this.loading = false;
+  load() {
+  this.loading = true;
+
+  this.entitiesService.getPaged(this.page, this.pageSize).subscribe({
+    next: (resp) => {
+
+      console.log('RESPUESTA COMPLETA:', resp);
+      console.log('RESP.DATA:', resp.data);
+
+      this.entities = resp.data ?? [];
+
+      console.log('ENTITIES:', this.entities);
+
+      this.page = resp.page ?? this.page;
+      this.total = resp.totalItems ?? this.entities.length;
+      this.totalPages =
+        resp.totalPages ??
+        Math.max(1, Math.ceil(this.total / this.pageSize));
+
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error(err);
+      this.entities = [];
+      this.loading = false;
+    }
+  });
+}
+  // ---------- Filtro local ----------
+
+  get filteredEntities(): Entity[] {
+    if (!this.searchText.trim()) return this.entities;
+    const q = this.searchText.toLowerCase();
+    return this.entities.filter((e) =>
+      (e.name ?? '').toLowerCase().includes(q)
+    );
+  }
+
+  // ---------- Paginación ----------
+
+  goToPage(p: number) {
+    if (p < 1 || p > this.totalPages || p === this.page) return;
+    this.page = p;
+    this.load();
+  }
+
+  get pages(): number[] {
+    const range: number[] = [];
+    const start = Math.max(1, this.page - 2);
+    const end = Math.min(this.totalPages, this.page + 2);
+    for (let i = start; i <= end; i++) range.push(i);
+    return range;
+  }
+
+  get fromItem(): number {
+    return this.total === 0 ? 0 : (this.page - 1) * this.pageSize + 1;
+  }
+
+  get toItem(): number {
+    return Math.min(this.page * this.pageSize, this.total);
+  }
+
+  // ---------- Panel ----------
+
+  openCreate() {
+    this.selectedEntity = null;
+    this.panelOpen = true;
+  }
+
+  openEdit(entity: Entity) {
+    this.selectedEntity = { ...entity };
+    this.panelOpen = true;
+  }
+
+  closePanel() {
+    this.panelOpen = false;
+    this.selectedEntity = null;
+  }
+
+  // ---------- CRUD ----------
+
+  onFormSubmit(fd: FormData) {
+    const isEdit = !!this.selectedEntity?.id_entity;
+    const request$ = isEdit
+      ? this.entitiesService.update(this.selectedEntity!.id_entity!, fd)
+      : this.entitiesService.create(fd);
+
+    request$.subscribe({
+      next: () => {
+        this.entityFormRef?.stopSubmitting();
+        this.closePanel();
+        this.load();
+        Swal.fire({
+          toast: true,
+          position: 'bottom-start',
+          icon: 'success',
+          title: isEdit ? 'Entidad actualizada correctamente.' : 'La entidad se creó correctamente.',
+          showConfirmButton: false,
+          timer: 3000,
+        });
       },
-      error: (err: any) => {
-        console.error(err);
-
-        this.entities = [];
-        this.total = 0;
-        this.totalPages = 1;
-        this.loading = false;
+      error: (err) => {
+        this.entityFormRef?.stopSubmitting();
+        const msg: string = err?.error?.message ?? 'Error al guardar la entidad.';
+        const icon = msg.toLowerCase().includes('nombre') || msg.toLowerCase().includes('email')
+          ? 'warning'
+          : 'error';
+        Swal.fire({
+          toast: true,
+          position: 'bottom-start',
+          icon,
+          title: msg,
+          showConfirmButton: false,
+          timer: 4000,
+        });
       },
     });
   }
 
-  onPageChange(
-    event: TablePageEvent
-  ): void {
-    this.page = event.page;
-    this.pageSize = event.pageSize;
-
-    this.loadEntities();
-  }
-
-  onTableAction(
-    event: {
-      actionId: string;
-      row: Entity;
-    }
-  ): void {
-
-    const { actionId, row } = event;
-
-    if (actionId === 'edit') {
-      this.router.navigate([
-        `/entities/update/${row.id_entity}`,
-      ]);
-    }
-
-    if (actionId === 'delete') {
-      this.delete(row);
-    }
-  }
-
-  delete(entity: Entity): void {
-
+  confirmDelete(entity: Entity) {
     Swal.fire({
-      title: '¿Estás seguro?',
-      text: `¿Eliminar la entidad "${entity.name}"?`,
+      title: '¿Eliminar entidad?',
+      text: `Se eliminará "${entity.name}". Esta acción no se puede deshacer.`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -144,27 +177,22 @@ export class EntityListComponent implements OnInit {
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
     }).then((result) => {
-
       if (result.isConfirmed) {
-
-        this.entityService
-          .delete(entity.id_entity!)
-          .subscribe({
-            next: () => {
-
-              Swal.fire(
-                'Eliminada',
-                `La entidad "${entity.name}" fue eliminada.`,
-                'success'
-              );
-
-              this.loadEntities();
-            },
-            error: (err: any) => {
-              console.error(err);
-            }
-          });
+        this.entitiesService.delete(entity.id_entity!).subscribe({
+          next: () => {
+            this.load();
+            Swal.fire('Eliminada', `La entidad "${entity.name}" fue eliminada.`, 'success');
+          },
+          error: (err) => {
+            const msg = err?.error?.message ?? 'No se pudo eliminar la entidad.';
+            Swal.fire('Error', msg, 'error');
+          },
+        });
       }
     });
+  }
+
+  onImgError(event: Event) {
+    (event.target as HTMLImageElement).style.display = 'none';
   }
 }

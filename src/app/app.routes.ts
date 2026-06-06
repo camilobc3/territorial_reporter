@@ -21,7 +21,7 @@ export const routes: Routes = [
       {
         path: 'entity',
         loadChildren: () =>
-          import('./pages/entities/entities.routes').then((m) => m.EntityRoutes)
+          import('./pages/entities/entities.routes').then((m) => m.EntitiesRoutes),
       },
       {
         path: 'ui-components',

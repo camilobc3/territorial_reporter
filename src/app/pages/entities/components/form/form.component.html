@@ -1,0 +1,141 @@
+<!-- form.component.html -->
+<div class="flex flex-col h-full overflow-hidden">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
+    <div>
+      <h2 class="text-lg font-semibold">{{ isEditMode ? 'Editar entidad' : 'Nueva entidad' }}</h2>
+      <p class="text-sm text-muted mt-0.5">Completa la información de la entidad.</p>
+    </div>
+    <button mat-icon-button (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Scrollable body -->
+  <ng-scrollbar class="flex-1 overflow-hidden">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 flex flex-col gap-5">
+
+      <!-- Logo upload + preview -->
+      <div class="flex gap-4 items-start">
+        <div class="flex-1">
+          <mat-label class="font-semibold text-sm mb-2 block">
+            Logo de la entidad
+          </mat-label>
+          <div
+            class="border-2 border-dashed rounded-lg p-5 flex flex-col items-center justify-center gap-2
+                   cursor-pointer hover:border-primary transition-colors"
+            [class.border-primary]="isDragOver"
+            [class.border-border]="!isDragOver"
+            (click)="fileInput.click()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="isDragOver = false"
+            (drop)="onDrop($event)">
+            <mat-icon class="text-muted">cloud_upload</mat-icon>
+            <p class="text-xs text-center text-muted leading-relaxed">
+              Arrastra y suelta la imagen aquí<br />
+              <span class="underline">o haz clic para seleccionar</span>
+            </p>
+            <p class="text-xs text-muted">Formatos: JPG, PNG. Max. 2MB</p>
+            <input #fileInput type="file" accept="image/jpeg,image/png"
+              class="hidden" (change)="onFileSelected($event)" />
+          </div>
+        </div>
+
+        <!-- Vista previa -->
+        <div class="flex flex-col items-center gap-1 shrink-0">
+          <span class="text-xs font-medium text-muted">Vista previa</span>
+          <div class="size-16 rounded-lg border border-border flex items-center justify-center overflow-hidden bg-gray-50">
+            @if (previewUrl) {
+              <img [src]="previewUrl" alt="preview" class="w-full h-full object-contain" />
+            } @else {
+              <mat-icon class="text-gray-300">business</mat-icon>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Nombre -->
+      <div>
+        <mat-label class="font-semibold text-sm mb-2 block">
+          Nombre de la entidad <span class="text-error">*</span>
+        </mat-label>
+        <mat-form-field appearance="outline" class="w-full" color="primary">
+          <input matInput formControlName="name" placeholder="Ej. Alcaldía de Manizales" />
+          @if (f['name'].invalid && (f['name'].dirty || f['name'].touched)) {
+            <mat-error>El nombre es obligatorio.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Dirección -->
+      <div>
+        <mat-label class="font-semibold text-sm mb-2 block">Dirección</mat-label>
+        <mat-form-field appearance="outline" class="w-full" color="primary">
+          <textarea matInput formControlName="address" rows="3"
+            placeholder="Carrera 21 # 19-22, Manizales, Caldas"
+            class="resize-none"></textarea>
+        </mat-form-field>
+      </div>
+
+      <!-- NIT + Teléfono -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <mat-label class="font-semibold text-sm mb-2 block">NIT</mat-label>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <input matInput formControlName="nit" placeholder="890.801.053-3" />
+          </mat-form-field>
+        </div>
+        <div>
+          <mat-label class="font-semibold text-sm mb-2 block">Teléfono</mat-label>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <input matInput formControlName="phone" placeholder="(606) 892 80 00" />
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <mat-label class="font-semibold text-sm mb-2 block">Correo electrónico</mat-label>
+        <mat-form-field appearance="outline" class="w-full" color="primary">
+          <input matInput formControlName="email" type="email"
+            placeholder="contacto@entidad.gov.co" />
+          @if (f['email'].invalid && (f['email'].dirty || f['email'].touched)) {
+            <mat-error>Ingrese un correo electrónico válido.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Estado -->
+      <div>
+        <mat-label class="font-semibold text-sm mb-2 block">
+          Estado <span class="text-error">*</span>
+        </mat-label>
+        <mat-form-field appearance="outline" class="w-full" color="primary">
+          <mat-select formControlName="status">
+            <mat-option value="active">Activa</mat-option>
+            <mat-option value="inactive">Inactiva</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+    </form>
+  </ng-scrollbar>
+
+  <!-- Footer acciones -->
+  <div class="flex gap-3 px-6 py-4 border-t border-border shrink-0">
+    <button mat-stroked-button type="button" (click)="onCancel()" class="flex-1">
+      Cancelar
+    </button>
+    <button mat-flat-button color="primary" type="button"
+      (click)="onSubmit()" [disabled]="form.invalid || submitting" class="flex-1">
+      @if (submitting) {
+        <mat-progress-spinner diameter="18" mode="indeterminate" color="accent"
+          class="inline-block mr-2">
+        </mat-progress-spinner>
+      }
+      {{ isEditMode ? 'Guardar cambios' : 'Guardar entidad' }}
+    </button>
+  </div>
+
+</div>

@@ -1,14 +1,9 @@
 import { Routes } from '@angular/router';
-import { EntityListComponent } from './list/list.component';
+import { ListComponent } from './list/list.component';
 
-export const EntityRoutes: Routes = [
+export const EntitiesRoutes: Routes = [
   {
-    path: '',
-    children: [
-      {
-        path: 'list',
-        component: EntityListComponent
-      }
-    ]
-  }
+    path: 'list',
+    component: ListComponent,
+  },
 ];
