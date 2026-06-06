@@ -1,0 +1,107 @@
+<mat-card class="cardWithShadow theme-card">
+  <div class="p-6">
+    <mat-card-title class="mb-0">
+      {{ isEditMode ? 'Editar ciudadano' : 'Crear ciudadano' }}
+    </mat-card-title>
+  </div>
+
+  <mat-card-content class="border-t border-border">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="grid grid-cols-12 gap-x-6">
+
+        <!-- Nombre -->
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="font-semibold mb-2 block">Nombre</mat-label>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <input matInput formControlName="name" placeholder="Ingrese el nombre" />
+            <mat-error [hidden]="!(f['name'].invalid && (f['name'].dirty || f['name'].touched))">
+              <span [hidden]="!f['name'].hasError('required')">El nombre es obligatorio.</span>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Email -->
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="font-semibold mb-2 block">Email</mat-label>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <input matInput formControlName="email" type="email" placeholder="correo@ejemplo.com" />
+            <mat-error [hidden]="!(f['email'].invalid && (f['email'].dirty || f['email'].touched))">
+              <span [hidden]="!f['email'].hasError('required')">El email es obligatorio.</span>
+              <span [hidden]="!f['email'].hasError('email')">Ingrese un correo electrónico válido.</span>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="font-semibold mb-2 block">Teléfono</mat-label>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <input matInput formControlName="phone" placeholder="Ingrese el teléfono" />
+            <mat-error [hidden]="!(f['phone'].invalid && (f['phone'].dirty || f['phone'].touched))">
+              <span [hidden]="!f['phone'].hasError('pattern')">Teléfono inválido (7-20 caracteres, números y + - ( )).</span>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Estado -->
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="font-semibold mb-2 block">Estado</mat-label>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <mat-select formControlName="status">
+              @for (opt of statusOptions; track opt) {
+                <mat-option [value]="opt">{{ opt | titlecase }}</mat-option>
+              }
+            </mat-select>
+            <mat-error [hidden]="!(f['status'].invalid && (f['status'].dirty || f['status'].touched))">
+              El estado es obligatorio.
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Dirección -->
+        <div class="col-span-12">
+          <mat-label class="font-semibold mb-2 block">Dirección</mat-label>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <input matInput formControlName="address" placeholder="Ingrese la dirección" />
+          </mat-form-field>
+        </div>
+
+        <!-- Latitud -->
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="font-semibold mb-2 block">Latitud</mat-label>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <input matInput formControlName="latitude" type="number" placeholder="Ej: 5.0952" />
+            <mat-error [hidden]="!(f['latitude'].invalid && (f['latitude'].dirty || f['latitude'].touched))">
+              <span [hidden]="!f['latitude'].hasError('min') && !f['latitude'].hasError('max')">La latitud debe estar entre -90 y 90.</span>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Longitud -->
+        <div class="col-span-12 lg:col-span-6">
+          <mat-label class="font-semibold mb-2 block">Longitud</mat-label>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <input matInput formControlName="longitude" type="number" placeholder="Ej: -75.5144" />
+            <mat-error [hidden]="!(f['longitude'].invalid && (f['longitude'].dirty || f['longitude'].touched))">
+              <span [hidden]="!f['longitude'].hasError('min') && !f['longitude'].hasError('max')">La longitud debe estar entre -180 y 180.</span>
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+      </div>
+
+      <div class="mt-3 flex gap-2">
+        <button mat-flat-button color="primary" type="submit"
+          [disabled]="form.invalid"
+          class="w-36 flex justify-center items-center">
+          {{ isEditMode ? 'Actualizar' : 'Crear' }}
+        </button>
+        <button mat-flat-button color="warn" type="button"
+          (click)="onCancel()"
+          class="w-36 flex justify-center items-center">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
