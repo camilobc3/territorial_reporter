@@ -1,24 +1,21 @@
 // list.component.ts
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
-import { NgScrollbarModule } from 'ngx-scrollbar';
 import { EntitiesService } from 'src/app/services/entity.service';
 import { Entity } from 'src/app/models/entity';
 import { FormComponent } from '../components/form/form.component';
 import { environment } from 'src/environments/environments';
+import { RichTableComponent, RichActionButton } from '../../../components/ui/rich-table/rich-table/rich-table.component';
 import Swal from 'sweetalert2';
+import { RichColumnDef } from 'src/app/components/ui/rich-table/rich-table/rich-column-def';
 
 @Component({
   selector: 'app-entities-list',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
     MaterialModule,
-    NgScrollbarModule,
     FormComponent,
+    RichTableComponent,
   ],
   templateUrl: './list.component.html',
 })
@@ -27,7 +24,6 @@ export class ListComponent implements OnInit {
 
   entities: Entity[] = [];
   loading = false;
-  searchText = '';
 
   page = 1;
   pageSize = 10;
@@ -37,7 +33,40 @@ export class ListComponent implements OnInit {
   panelOpen = false;
   selectedEntity: Entity | null = null;
 
-  readonly apiBase = environment.apiUrl;
+  // ---------- Configuración de tabla ----------
+
+  columns: RichColumnDef[] = [
+    {
+      key: 'logo_url',
+      header: 'Logo',
+      type: 'image',
+      imageBaseUrl: environment.apiUrl + '/api/images/',
+      imageFallbackIcon: 'business',
+    },
+    {
+      key: 'name',
+      header: 'Nombre',
+    },
+    {
+      key: 'address',
+      header: 'Dirección',
+      hideOnMobile: true,
+    },
+    {
+      key: 'status',
+      header: 'Estado',
+      type: 'badge',
+      badgeOptions: [
+        { value: 'active',   label: 'Activa',   class: 'bg-light-success text-success' },
+        { value: 'inactive', label: 'Inactiva', class: 'bg-light-error text-error'     },
+      ],
+    },
+  ];
+
+  actions: RichActionButton[] = [
+    { id: 'edit',   icon: 'edit',   tooltip: 'Editar',   iconClass: 'text-primary' },
+    { id: 'delete', icon: 'delete', tooltip: 'Eliminar', iconClass: 'text-error'   },
+  ];
 
   constructor(private entitiesService: EntitiesService) {}
 
@@ -48,41 +77,21 @@ export class ListComponent implements OnInit {
   // ---------- Carga ----------
 
   load() {
-  this.loading = true;
-
-  this.entitiesService.getPaged(this.page, this.pageSize).subscribe({
-    next: (resp) => {
-
-      console.log('RESPUESTA COMPLETA:', resp);
-      console.log('RESP.DATA:', resp.data);
-
-      this.entities = resp.data ?? [];
-
-      console.log('ENTITIES:', this.entities);
-
-      this.page = resp.page ?? this.page;
-      this.total = resp.totalItems ?? this.entities.length;
-      this.totalPages =
-        resp.totalPages ??
-        Math.max(1, Math.ceil(this.total / this.pageSize));
-
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error(err);
-      this.entities = [];
-      this.loading = false;
-    }
-  });
-}
-  // ---------- Filtro local ----------
-
-  get filteredEntities(): Entity[] {
-    if (!this.searchText.trim()) return this.entities;
-    const q = this.searchText.toLowerCase();
-    return this.entities.filter((e) =>
-      (e.name ?? '').toLowerCase().includes(q)
-    );
+    this.loading = true;
+    this.entitiesService.getPaged(this.page, this.pageSize).subscribe({
+      next: (resp) => {
+        this.entities   = resp.data ?? [];
+        this.page       = resp.page ?? this.page;
+        this.total      = resp.totalItems ?? this.entities.length;
+        this.totalPages = resp.totalPages ?? Math.max(1, Math.ceil(this.total / this.pageSize));
+        this.loading    = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.entities = [];
+        this.loading  = false;
+      },
+    });
   }
 
   // ---------- Paginación ----------
@@ -93,20 +102,11 @@ export class ListComponent implements OnInit {
     this.load();
   }
 
-  get pages(): number[] {
-    const range: number[] = [];
-    const start = Math.max(1, this.page - 2);
-    const end = Math.min(this.totalPages, this.page + 2);
-    for (let i = start; i <= end; i++) range.push(i);
-    return range;
-  }
+  // ---------- Acciones de tabla ----------
 
-  get fromItem(): number {
-    return this.total === 0 ? 0 : (this.page - 1) * this.pageSize + 1;
-  }
-
-  get toItem(): number {
-    return Math.min(this.page * this.pageSize, this.total);
+  onAction(event: { actionId: string; row: Entity }) {
+    if (event.actionId === 'edit')   this.openEdit(event.row);
+    if (event.actionId === 'delete') this.confirmDelete(event.row);
   }
 
   // ---------- Panel ----------
@@ -190,9 +190,5 @@ export class ListComponent implements OnInit {
         });
       }
     });
-  }
-
-  onImgError(event: Event) {
-    (event.target as HTMLImageElement).style.display = 'none';
   }
 }
