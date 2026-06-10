@@ -1,0 +1,9 @@
+@if (category) {
+    <app-category-form
+      [category]="category"
+      (formSubmit)="onUpdate($event)"
+      (cancelled)="onCancel()">
+    </app-category-form>
+  } @else {
+    <p class="text-gray-500 p-6">Cargando categoría...</p>
+  }

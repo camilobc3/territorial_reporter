@@ -1,0 +1,151 @@
+<mat-card class="cardWithShadow theme-card">
+    <div class="p-6">
+      <mat-card-title class="mb-0">
+        {{ isEditMode ? 'Editar categoría' : 'Nueva categoría' }}
+      </mat-card-title>
+      <p class="text-sm text-gray-500 mt-1">
+        {{ isEditMode ? 'Modifica los datos de la categoría.' : 'Completa la información de la categoría.' }}
+      </p>
+    </div>
+  
+    <mat-card-content class="border-t border-border">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="grid grid-cols-12 gap-x-6">
+  
+          <!-- Nombre -->
+          <div class="col-span-12">
+            <mat-label class="font-semibold mb-2 block">
+              Nombre de la categoría <span class="text-red-500">*</span>
+            </mat-label>
+            <mat-form-field appearance="outline" class="w-full" color="primary">
+              <input matInput formControlName="name" placeholder="Ej. Medio Ambiente" />
+              <mat-error [hidden]="!(f['name'].invalid && (f['name'].dirty || f['name'].touched))">
+                <span [hidden]="!f['name'].hasError('required')">El nombre es obligatorio.</span>
+                <span [hidden]="!f['name'].hasError('minlength')">Mínimo 2 caracteres.</span>
+              </mat-error>
+            </mat-form-field>
+            <p class="text-xs text-gray-400 -mt-4 mb-3">
+              Este nombre será visible para los funcionarios y ciudadanos.
+            </p>
+          </div>
+  
+          <!-- Descripción -->
+          <div class="col-span-12">
+            <mat-label class="font-semibold mb-2 block">Descripción</mat-label>
+            <mat-form-field appearance="outline" class="w-full" color="primary">
+              <textarea matInput formControlName="description" rows="3"
+                placeholder="Describe brevemente el tipo de situaciones que clasifica esta categoría...">
+              </textarea>
+            </mat-form-field>
+          </div>
+  
+          <!-- Imagen representativa -->
+          <div class="col-span-12">
+            <mat-label class="font-semibold mb-2 block">Imagen representativa</mat-label>
+  
+            <div class="flex gap-4 items-start">
+  
+              <!-- Zona de carga -->
+              <div class="flex-1">
+                @if (!imagePreview) {
+                  <label for="imageInput"
+                    class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary hover:bg-gray-50 transition-colors">
+                    <mat-icon class="text-gray-400 text-4xl mb-1">cloud_upload</mat-icon>
+                    <span class="text-sm text-gray-500">Arrastra y suelta una imagen aquí</span>
+                    <span class="text-xs text-gray-400">o haz clic para seleccionar</span>
+                    <span class="text-xs text-gray-400 mt-1">Formatos: JPG, PNG. Máx. 2MB</span>
+                  </label>
+                } @else {
+                  <div class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                    <mat-icon class="text-green-500">check_circle</mat-icon>
+                    <span class="text-sm text-gray-700 truncate flex-1">{{ selectedFileName || 'Imagen actual' }}</span>
+                    <button mat-icon-button type="button" (click)="removeImage()" class="text-red-400 hover:text-red-600">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                }
+                <input id="imageInput" type="file" accept="image/jpeg,image/png"
+                  class="hidden" (change)="onFileSelected($event)" />
+              </div>
+  
+              <!-- Vista previa -->
+              <div class="flex flex-col items-center gap-1">
+                <span class="text-xs text-gray-500">Vista previa</span>
+                <div class="w-16 h-16 rounded-full border-2 border-gray-200 flex items-center justify-center overflow-hidden bg-gray-100">
+                  @if (imagePreview) {
+                    <img [src]="imagePreview" alt="Preview" class="w-full h-full object-cover" />
+                  } @else {
+                    <mat-icon class="text-gray-300 text-3xl">image</mat-icon>
+                  }
+                </div>
+              </div>
+  
+            </div>
+          </div>
+  
+          <!-- Categoría padre -->
+          <div class="col-span-12 mt-2">
+            <mat-label class="font-semibold mb-2 block">
+              Categoría padre <span class="text-gray-400 font-normal">(opcional)</span>
+            </mat-label>
+            <mat-form-field appearance="outline" class="w-full" color="primary">
+              <mat-select formControlName="id_parent_category" placeholder="Selecciona una categoría padre">
+                <mat-option [value]="null">— Ninguna (categoría principal)</mat-option>
+                @for (cat of parentCategories; track cat.id_category) {
+                  <mat-option [value]="cat.id_category">{{ cat.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <div class="flex items-start gap-2 -mt-3 mb-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <mat-icon class="text-blue-400 text-sm mt-0.5" style="font-size:16px">info</mat-icon>
+              <p class="text-xs text-blue-600">
+                Si no seleccionas una categoría padre, se creará como categoría principal.
+              </p>
+            </div>
+          </div>
+  
+          <!-- Estado -->
+          <div class="col-span-12 lg:col-span-6">
+            <mat-label class="font-semibold mb-2 block">
+              Estado <span class="text-red-500">*</span>
+            </mat-label>
+            <mat-form-field appearance="outline" class="w-full" color="primary">
+              <mat-select formControlName="status">
+                <mat-option value="active">
+                  <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Activa
+                  </span>
+                </mat-option>
+                <mat-option value="inactive">
+                  <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-gray-400 inline-block"></span> Inactiva
+                  </span>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <p class="text-xs text-gray-400 -mt-4 mb-3">
+              Las categorías inactivas no estarán disponibles para clasificar anotaciones.
+            </p>
+          </div>
+  
+        </div>
+  
+        <!-- Botones -->
+        <div class="mt-4 flex gap-2">
+          <button mat-flat-button color="primary" type="submit"
+            [disabled]="form.invalid"
+            class="w-44 flex justify-center items-center gap-1">
+            <mat-icon class="text-sm">{{ isEditMode ? 'save' : 'add' }}</mat-icon>
+            {{ isEditMode ? 'Guardar cambios' : 'Guardar categoría' }}
+          </button>
+  
+          <button mat-flat-button color="warn" type="button"
+            (click)="onCancel()"
+            class="w-36 flex justify-center items-center">
+            Cancelar
+          </button>
+        </div>
+  
+      </form>
+    </mat-card-content>
+  </mat-card>
