@@ -1,0 +1,10 @@
+<!-- update.component.html -->
+@if (entity) {
+  <app-form
+    [entity]="entity"
+    (formSubmit)="onUpdate($event)"
+    (cancel)="onCancel()">
+  </app-form>
+} @else {
+  <p>Cargando entidad...</p>
+}

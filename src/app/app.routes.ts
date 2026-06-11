@@ -24,6 +24,11 @@ export const routes: Routes = [
           import('./pages/entities/entities.routes').then((m) => m.EntitiesRoutes),
       },
       {
+        path: 'entities',
+        loadChildren: () =>
+          import('./pages/entities/entities.routes').then((m) => m.EntitiesRoutes),
+      },
+      {
         path: 'citizens',
         loadChildren: () =>
           import('./pages/citizens/citizens.routes').then((m) => m.CitizenRoutes),
