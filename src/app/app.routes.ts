@@ -50,6 +50,11 @@ export const routes: Routes = [
         canActivateChild: [AuthenticatedGuard],
         loadChildren: () =>
           import('./pages/users/users.routes').then((m) => m.UserRoutes),
+      },
+      {
+        path: 'categories',
+        loadChildren: () => 
+          import('./pages/categories/categories.routes').then(m => m.categoriesRoutes)
       }
     ],
   },

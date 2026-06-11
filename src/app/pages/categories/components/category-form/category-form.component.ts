@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
@@ -11,8 +11,7 @@ import { CategoriesService } from 'src/app/services/categories.service';
   imports: [CommonModule, ReactiveFormsModule, MaterialModule],
   templateUrl: './category-form.component.html',
 })
-export class CategoryFormComponent implements OnInit {
-
+export class CategoryFormComponent implements OnInit, OnChanges {
   /** Si se recibe una categoría, el formulario entra en modo edición */
   @Input() category: Category | null = null;
 
@@ -41,21 +40,30 @@ export class CategoryFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.isEditMode = !!this.category;
+    this.initForm();
+    this.loadParentCategories();
+  }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['category']) {
+      // Reiniciamos formulario e imagen cuando la categoría cambia
+      this.initForm();
+      this.loadParentCategories();
+      // Resetear imagen y preview
+      this.selectedFile = null;
+      this.selectedFileName = '';
+      this.imagePreview = this.category?.image_url ?? null;
+    }
+  }
+
+  private initForm(): void {
+    this.isEditMode = !!this.category;
     this.form = this.fb.group({
       name: [this.category?.name ?? '', [Validators.required, Validators.minLength(2)]],
       description: [this.category?.description ?? ''],
       id_parent_category: [this.category?.id_parent_category ?? null],
       status: [this.category?.status ?? 'active', Validators.required],
     });
-
-    // Si estamos editando y tiene imagen, mostrar preview
-    if (this.category?.image_url) {
-      this.imagePreview = this.category.image_url;
-    }
-
-    this.loadParentCategories();
   }
 
   /** Getter de controles para acceso rápido en el template */
