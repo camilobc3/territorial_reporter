@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
 import { EntitiesService } from 'src/app/services/entity.service';
 import { Entity } from 'src/app/models/entity';
-import { RichTableComponent, RichActionButton } from '../../../components/ui/rich-table/rich-table/rich-table.component';
-import { RichColumnDef } from '../../../components/ui/rich-table/rich-table/rich-column-def';
+import { OptimizedTableComponent, OptimizedActionButton } from '../../../components/ui/optimized-table/optimized-table/optimized-table.component';
+import { OptimizedColumnDef } from '../../../components/ui/optimized-table/optimized-table/optimized-column-def';
 import { environment } from 'src/environments/environments';
 import Swal from 'sweetalert2';
 
@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
   standalone: true,
   imports: [
     MaterialModule,
-    RichTableComponent,
+    OptimizedTableComponent,
   ],
   templateUrl: './list.component.html',
 })
@@ -30,7 +30,7 @@ export class ListComponent implements OnInit {
 
   // ---------- Configuración de tabla ----------
 
-  columns: RichColumnDef[] = [
+  columns: OptimizedColumnDef[] = [
     {
       key: 'logo_url',
       header: 'Logo',
@@ -58,7 +58,7 @@ export class ListComponent implements OnInit {
     },
   ];
 
-  actions: RichActionButton[] = [
+  actions: OptimizedActionButton[] = [
     { id: 'edit',   icon: 'edit',   tooltip: 'Editar',   iconClass: 'text-primary' },
     { id: 'delete', icon: 'delete', tooltip: 'Eliminar', iconClass: 'text-error'   },
   ];

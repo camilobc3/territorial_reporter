@@ -3,14 +3,14 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CitizenService } from 'src/app/services/citizen.service';
 import { Citizen } from 'src/app/models/citizen';
-import { RichTableComponent, RichActionButton } from '../../../components/ui/rich-table/rich-table/rich-table.component';
-import { RichColumnDef } from '../../../components/ui/rich-table/rich-table/rich-column-def';
+import { OptimizedTableComponent, OptimizedActionButton } from '../../../components/ui/optimized-table/optimized-table/optimized-table.component';
+import { OptimizedColumnDef } from '../../../components/ui/optimized-table/optimized-table/optimized-column-def';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-citizen-list',
   standalone: true,
-  imports: [RichTableComponent],
+  imports: [OptimizedTableComponent],
   templateUrl: './list.component.html',
 })
 export class CitizenListComponent implements OnInit {
@@ -28,7 +28,7 @@ export class CitizenListComponent implements OnInit {
 
   // ---------- Configuración de tabla ----------
 
-  columns: RichColumnDef[] = [
+  columns: OptimizedColumnDef[] = [
     { key: 'id_citizen', header: 'ID'        },
     { key: 'name',       header: 'Nombre'    },
     { key: 'email',      header: 'Email',      hideOnMobile: true },
@@ -44,7 +44,7 @@ export class CitizenListComponent implements OnInit {
     },
   ];
 
-  actions: RichActionButton[] = [
+  actions: OptimizedActionButton[] = [
     { id: 'edit',   icon: 'edit',   tooltip: 'Editar',   iconClass: 'text-primary' },
     { id: 'delete', icon: 'delete', tooltip: 'Eliminar', iconClass: 'text-error'   },
   ];

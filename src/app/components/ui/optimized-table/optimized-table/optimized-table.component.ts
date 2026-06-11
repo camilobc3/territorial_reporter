@@ -1,11 +1,10 @@
-// src/app/components/ui/rich-table/rich-table.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
-import { BadgeOption, RichColumnDef } from './rich-column-def';
+import { BadgeOption, OptimizedColumnDef } from './optimized-column-def';
 
-export interface RichActionButton {
+export interface OptimizedActionButton {
   id: string;
   icon: string;
   tooltip: string;
@@ -14,12 +13,12 @@ export interface RichActionButton {
 }
 
 @Component({
-  selector: 'app-rich-table',
+  selector: 'app-optimized-table',
   standalone: true,
   imports: [CommonModule, FormsModule, MaterialModule],
-  templateUrl: './rich-table.component.html',
+  templateUrl: './optimized-table.component.html',
 })
-export class RichTableComponent<T extends Record<string, any>> {
+export class OptimizedTableComponent<T extends Record<string, any>> {
 
   // --- Configuración visual ---
   @Input() title = '';
@@ -30,8 +29,8 @@ export class RichTableComponent<T extends Record<string, any>> {
   @Input() searchKey = 'name';
 
   // --- Definición de columnas y acciones ---
-  @Input() columns: RichColumnDef[] = [];
-  @Input() actions: RichActionButton[] = [];
+  @Input() columns: OptimizedColumnDef[] = [];
+  @Input() actions: OptimizedActionButton[] = [];
 
   // --- Datos ---
   @Input() data: T[] = [];
@@ -44,8 +43,8 @@ export class RichTableComponent<T extends Record<string, any>> {
   @Input() totalPages = 1;
 
   // --- Eventos ---
-  @Output() create     = new EventEmitter<void>();
-  @Output() action     = new EventEmitter<{ actionId: string; row: T }>();
+  @Output() create = new EventEmitter<void>();
+  @Output() action = new EventEmitter<{ actionId: string; row: T }>();
   @Output() pageChange = new EventEmitter<number>();
 
   searchText = '';
@@ -55,7 +54,7 @@ export class RichTableComponent<T extends Record<string, any>> {
   get filteredData(): T[] {
     if (!this.searchText.trim()) return this.data;
     const q = this.searchText.toLowerCase();
-    return this.data.filter(row => {
+    return this.data.filter((row) => {
       const val = this.getValue(row, this.searchKey);
       return String(val ?? '').toLowerCase().includes(q);
     });
@@ -87,9 +86,9 @@ export class RichTableComponent<T extends Record<string, any>> {
 
   // ─── Helpers de renderizado ──────────────────────────────────────────────────
 
-  getBadgeOption(col: RichColumnDef, row: T): BadgeOption | null {
+  getBadgeOption(col: OptimizedColumnDef, row: T): BadgeOption | null {
     const val = String(this.getValue(row, col.key) ?? '');
-    return col.badgeOptions?.find(o => o.value === val) ?? null;
+    return col.badgeOptions?.find((o) => o.value === val) ?? null;
   }
 
   onImgError(event: Event): void {

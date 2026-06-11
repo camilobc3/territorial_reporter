@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RichTableComponent } from './rich-table.component';
+import { OptimizedTableComponent } from './optimized-table.component';
 
-describe('RichTableComponent', () => {
-  let component: RichTableComponent;
-  let fixture: ComponentFixture<RichTableComponent>;
+describe('OptimizedTableComponent', () => {
+  let component: OptimizedTableComponent;
+  let fixture: ComponentFixture<OptimizedTableComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RichTableComponent]
+      imports: [OptimizedTableComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(RichTableComponent);
+    fixture = TestBed.createComponent(OptimizedTableComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

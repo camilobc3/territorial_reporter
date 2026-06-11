@@ -1,8 +1,6 @@
-<!-- src/app/components/ui/rich-table/rich-table.component.html -->
 <mat-card class="cardWithShadow">
   <mat-card-content>
 
-    <!-- Encabezado -->
     <div class="flex items-start justify-between mb-1">
       <div>
         @if (title) {
@@ -18,7 +16,6 @@
       </button>
     </div>
 
-    <!-- Buscador -->
     <div class="mt-4 mb-4">
       <mat-form-field appearance="outline" class="w-full max-w-sm" subscriptSizing="dynamic">
         <mat-icon matPrefix class="flex items-center">search</mat-icon>
@@ -26,7 +23,6 @@
       </mat-form-field>
     </div>
 
-    <!-- Tabla -->
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
 
@@ -78,7 +74,6 @@
                     [class.md:table-cell]="col.hideOnMobile"
                     [ngClass]="col.class ?? ''">
 
-                    <!-- IMAGE -->
                     @if (col.type === 'image') {
                       <div class="size-10 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
                         @if (getValue(row, col.key)) {
@@ -93,7 +88,6 @@
                       </div>
                     }
 
-                    <!-- BADGE -->
                     @else if (col.type === 'badge') {
                       @if (getBadgeOption(col, row); as badge) {
                         <span class="rounded font-semibold px-3 py-1 text-xs" [ngClass]="badge.class">
@@ -104,14 +98,12 @@
                       }
                     }
 
-                    <!-- DATE -->
                     @else if (col.type === 'date') {
                       <span class="text-gray-600">
                         {{ getValue(row, col.key) ? (getValue(row, col.key) | date:'dd/MM/yyyy') : '—' }}
                       </span>
                     }
 
-                    <!-- TEXT (default) -->
                     @else {
                       <span>{{ getValue(row, col.key) ?? '—' }}</span>
                     }
@@ -119,7 +111,6 @@
                   </td>
                 }
 
-                <!-- ACCIONES -->
                 @if (actions.length) {
                   <td class="px-4 py-3 whitespace-nowrap">
                     <div class="flex gap-1">
@@ -142,7 +133,6 @@
       </table>
     </div>
 
-    <!-- Paginación -->
     <div class="flex items-center justify-between mt-4 pt-3 border-t border-border text-sm text-gray-500">
       <span>Mostrando {{ fromItem }} a {{ toItem }} de {{ total }} registros</span>
       <div class="flex items-center gap-1">
