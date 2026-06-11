@@ -1,18 +1,16 @@
+// list.component.ts - Citizen
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CitizenService } from 'src/app/services/citizen.service';
 import { Citizen } from 'src/app/models/citizen';
-import { DynamicTableComponent } from 'src/app/components/ui/table/dynamic-table/dynamic-table.component';
-import { ColumnDef } from 'src/app/models/component-dynamic-table/column-def';
-import { ActionButton } from 'src/app/models/component-dynamic-table/action-button';
-import { TablePageEvent } from 'src/app/models/component-dynamic-table/table-page-event';
+import { RichTableComponent, RichActionButton } from '../../../components/ui/rich-table/rich-table/rich-table.component';
+import { RichColumnDef } from '../../../components/ui/rich-table/rich-table/rich-column-def';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-citizen-list',
   standalone: true,
-  imports: [CommonModule, DynamicTableComponent],
+  imports: [RichTableComponent],
   templateUrl: './list.component.html',
 })
 export class CitizenListComponent implements OnInit {
@@ -25,27 +23,30 @@ export class CitizenListComponent implements OnInit {
   total = 0;
   totalPages = 1;
 
-  columns: ColumnDef[] = [
-    { header: 'ID',        key: 'id_citizen' },
-    { header: 'Nombre',    key: 'name'       },
-    { header: 'Email',     key: 'email'      },
-    { header: 'Teléfono',  key: 'phone'      },
-    { header: 'Estado',    key: 'status'     },
+  panelOpen = false;
+  selectedCitizen: Citizen | null = null;
+
+  // ---------- Configuración de tabla ----------
+
+  columns: RichColumnDef[] = [
+    { key: 'id_citizen', header: 'ID'        },
+    { key: 'name',       header: 'Nombre'    },
+    { key: 'email',      header: 'Email',      hideOnMobile: true },
+    { key: 'phone',      header: 'Teléfono',   hideOnMobile: true },
+    {
+      key: 'status',
+      header: 'Estado',
+      type: 'badge',
+      badgeOptions: [
+        { value: 'active',   label: 'Activo',   class: 'bg-light-success text-success' },
+        { value: 'inactive', label: 'Inactivo', class: 'bg-light-error text-error'     },
+      ],
+    },
   ];
 
-  actions: ActionButton[] = [
-    {
-      id: 'edit',
-      label: 'Editar',
-      icon: 'heroPencil',
-      class: 'flex-1 px-2 py-1 rounded bg-yellow-400 text-black cursor-pointer flex items-center justify-center gap-1'
-    },
-    {
-      id: 'delete',
-      label: 'Eliminar',
-      icon: 'heroTrash',
-      class: 'flex-1 px-2 py-1 rounded bg-red-500 text-white cursor-pointer flex items-center justify-center gap-1'
-    }
+  actions: RichActionButton[] = [
+    { id: 'edit',   icon: 'edit',   tooltip: 'Editar',   iconClass: 'text-primary' },
+    { id: 'delete', icon: 'delete', tooltip: 'Eliminar', iconClass: 'text-error'   },
   ];
 
   constructor(
@@ -53,11 +54,19 @@ export class CitizenListComponent implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit(): void {
-    this.loadCitizens();
+  // ---------- Navegación ----------
+
+  openCreate(): void {
+    this.router.navigate(['/citizens/create']);
   }
 
-  loadCitizens(page = this.page, pageSize = this.pageSize): void {
+  ngOnInit(): void {
+    this.load();
+  }
+
+  // ---------- Carga ----------
+
+  load(page = this.page, pageSize = this.pageSize): void {
     this.loading = true;
     this.citizenService.getPaged(page, pageSize).subscribe({
       next: (resp) => {
@@ -73,24 +82,26 @@ export class CitizenListComponent implements OnInit {
         this.total      = 0;
         this.totalPages = 1;
         this.loading    = false;
-      }
+      },
     });
   }
 
-  onPageChange(event: TablePageEvent): void {
-    this.page     = event.page;
-    this.pageSize = event.pageSize;
-    this.loadCitizens(this.page, this.pageSize);
+  // ---------- Paginación ----------
+
+  goToPage(p: number): void {
+    if (p < 1 || p > this.totalPages || p === this.page) return;
+    this.page = p;
+    this.load();
   }
 
-  onTableAction(event: { actionId: string; row: Citizen }): void {
-    const { actionId, row } = event;
-    if (actionId === 'edit') {
-      this.router.navigate([`/citizens/update/${row.id_citizen}`]);
-    } else if (actionId === 'delete') {
-      this.delete(row);
-    }
+  // ---------- Acciones de tabla ----------
+
+  onAction(event: { actionId: string; row: Citizen }): void {
+    if (event.actionId === 'edit')   this.router.navigate([`/citizens/update/${event.row.id_citizen}`]);
+    if (event.actionId === 'delete') this.delete(event.row);
   }
+
+  // ---------- CRUD ----------
 
   delete(citizen: Citizen): void {
     Swal.fire({
@@ -101,14 +112,14 @@ export class CitizenListComponent implements OnInit {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      cancelButtonText: 'Cancelar',
     }).then((result) => {
       if (result.isConfirmed) {
         this.citizenService.delete(citizen.id_citizen!).subscribe({
           next: () => {
             Swal.fire('Eliminado', `El ciudadano "${citizen.name}" ha sido eliminado.`, 'success');
-            this.loadCitizens();
-          }
+            this.load();
+          },
         });
       }
     });

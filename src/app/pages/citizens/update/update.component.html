@@ -1,1 +1,8 @@
-<p>update works!</p>
+@if (citizen) {
+  <app-citizen-form
+    [citizen]="citizen"
+    (formSubmit)="onUpdate($event)">
+  </app-citizen-form>
+} @else {
+  <p>Cargando ciudadano...</p>
+}

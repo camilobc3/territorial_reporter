@@ -1,12 +1,19 @@
-<app-dynamic-table
-  [data]="citizens"
+<!-- list.component.html - Citizen -->
+<app-rich-table
+  title="Ciudadanos registrados"
+  subtitle="Consulta, edita o elimina los ciudadanos del sistema."
+  createLabel="Nuevo ciudadano"
+  searchPlaceholder="Buscar por nombre..."
+  searchKey="name"
   [columns]="columns"
   [actions]="actions"
+  [data]="citizens"
   [loading]="loading"
-  [totalItems]="total"
-  [totalPages]="totalPages"
   [page]="page"
   [pageSize]="pageSize"
-  (pageChange)="onPageChange($event)"
-  (action)="onTableAction($event)">
-</app-dynamic-table>
+  [total]="total"
+  [totalPages]="totalPages"
+  (create)="openCreate()"
+  (action)="onAction($event)"
+  (pageChange)="goToPage($event)">
+</app-rich-table>
