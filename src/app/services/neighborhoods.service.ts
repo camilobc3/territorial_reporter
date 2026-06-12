@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import { environment } from '../../environments/environments';
 import { Neighborhood } from '../models/neighborhood';
@@ -59,7 +59,9 @@ export class NeighborhoodsService {
    */
   getByCommune(idCommune: number): Observable<Neighborhood[]> {
     const params = new HttpParams().set('id_commune', String(idCommune));
-    return this.http.get<Neighborhood[]>(this.apiUrl, { params });
+    return this.http.get<Neighborhood[]>(this.apiUrl, { params }).pipe(
+      map(neighborhoods => neighborhoods.filter(n => n.id_commune === idCommune))
+    );
   }
 
   /**

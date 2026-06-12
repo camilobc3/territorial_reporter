@@ -1,0 +1,84 @@
+<div class="flex gap-4">
+
+    <!-- Contenido principal -->
+    <div class="flex-1 min-w-0 flex flex-col gap-4">
+  
+      <!-- Filtros -->
+      <mat-card class="cardWithShadow">
+        <mat-card-content>
+          <div class="flex items-center gap-2 mb-3">
+            <mat-icon class="text-primary">filter_list</mat-icon>
+            <span class="font-semibold text-sm">Selecciona la comuna</span>
+            <span class="text-xs text-muted ml-1">— Filtra los barrios por comuna</span>
+          </div>
+  
+          <form [formGroup]="filterForm" class="flex flex-col sm:flex-row gap-4">
+  
+            <!-- Comuna -->
+            <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
+              <mat-label>Comuna</mat-label>
+              <mat-select formControlName="commune"
+                (selectionChange)="onCommuneChange($event.value)">
+                @if (loadingCommunes) {
+                  <mat-option disabled>Cargando comunas...</mat-option>
+                } @else if (communes.length === 0) {
+                  <mat-option disabled>No hay comunas registradas</mat-option>
+                } @else {
+                  @for (commune of communes; track commune.id_commune) {
+                    <mat-option [value]="commune.id_commune">{{ commune.name }}</mat-option>
+                  }
+                }
+              </mat-select>
+              <mat-icon matSuffix class="text-gray-400">location_city</mat-icon>
+            </mat-form-field>
+  
+  
+          </form>
+        </mat-card-content>
+      </mat-card>
+  
+      <!-- Tabla -->
+      @if (selectedCommuneId) {
+        <app-optimized-table
+          title="Barrios"
+          subtitle="Barrios registrados para la comuna seleccionada."
+          createLabel="Nuevo barrio"
+          searchPlaceholder="Buscar barrio..."
+          searchKey="name"
+          [columns]="columns"
+          [actions]="actions"
+          [data]="neighborhoods"
+          [loading]="loading"
+          [page]="page"
+          [pageSize]="pageSize"
+          [total]="total"
+          [totalPages]="totalPages"
+          (create)="openCreate()"
+          (action)="onAction($event)"
+          (pageChange)="goToPage($event)">
+        </app-optimized-table>
+      } @else {
+        <mat-card class="cardWithShadow">
+          <mat-card-content>
+            <div class="flex flex-col items-center justify-center py-16 gap-3 text-gray-400">
+              <mat-icon style="font-size: 48px; width: 48px; height: 48px;">holiday_village</mat-icon>
+              <p class="text-base font-medium">Selecciona una comuna</p>
+              <p class="text-sm">Los barrios registrados aparecerán aquí.</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+  
+    </div>
+  
+    <!-- Panel lateral -->
+    <app-side-panel>
+      <app-neighborhood-form
+        [neighborhood]="editingNeighborhood"
+        [selectedCommuneId]="selectedCommuneId"
+        (formSubmit)="onFormSubmit($event)"
+        (cancelled)="onFormCancel()">
+      </app-neighborhood-form>
+    </app-side-panel>
+  
+  </div>
