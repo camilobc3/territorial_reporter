@@ -1,0 +1,62 @@
+<div class="flex flex-col h-full overflow-hidden">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
+      <div>
+        <h2 class="text-lg font-semibold">{{ isEditMode ? 'Editar comuna' : 'Nueva comuna' }}</h2>
+        <p class="text-sm text-muted mt-0.5">Completa la información de la comuna.</p>
+      </div>
+      <button mat-icon-button (click)="onCancel()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  
+    <!-- Body -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col flex-1 overflow-auto p-6 gap-5">
+  
+      <!-- Nombre -->
+      <div>
+        <mat-label class="font-semibold text-sm mb-2 block">
+          Nombre de la comuna <span class="text-red-500">*</span>
+        </mat-label>
+        <mat-form-field appearance="outline" class="w-full" color="primary">
+          <input matInput formControlName="name" placeholder="Ej. Comuna 1 - La Fuente" />
+          @if (f['name'].invalid && (f['name'].dirty || f['name'].touched)) {
+            <mat-error>
+              <span [hidden]="!f['name'].hasError('required')">El nombre es obligatorio.</span>
+              <span [hidden]="!f['name'].hasError('minlength')">Mínimo 2 caracteres.</span>
+            </mat-error>
+          }
+        </mat-form-field>
+      </div>
+  
+      <!-- Estado -->
+      <div>
+        <mat-label class="font-semibold text-sm mb-2 block">
+          Estado <span class="text-red-500">*</span>
+        </mat-label>
+        <mat-form-field appearance="outline" class="w-full" color="primary">
+          <mat-select formControlName="status">
+            <mat-option value="active">Activa</mat-option>
+            <mat-option value="inactive">Inactiva</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+  
+      <!-- id_city oculto — ya viene prellenado desde el list -->
+      <input type="hidden" formControlName="id_city" />
+  
+    </form>
+  
+    <!-- Footer -->
+    <div class="flex gap-3 px-6 py-4 border-t border-border shrink-0">
+      <button mat-stroked-button type="button" (click)="onCancel()" class="flex-1">
+        Cancelar
+      </button>
+      <button mat-flat-button color="primary" type="button"
+        (click)="onSubmit()" [disabled]="form.invalid" class="flex-1">
+        {{ isEditMode ? 'Guardar cambios' : 'Guardar comuna' }}
+      </button>
+    </div>
+  
+  </div>
