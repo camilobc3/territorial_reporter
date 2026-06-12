@@ -1,0 +1,35 @@
+.reports-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 24px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.header p {
+  margin-top: 6px;
+  color: #64748b;
+}
+
+.response-preview {
+  margin-top: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.response-preview pre {
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+}

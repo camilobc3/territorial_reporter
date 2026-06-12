@@ -1,0 +1,17 @@
+<div class="chart-card" *ngIf="chartOptions.series?.length">
+
+  <h3>Gráfica de líneas</h3>
+
+  <apx-chart
+    [series]="chartOptions.series!"
+    [chart]="chartOptions.chart!"
+    [xaxis]="chartOptions.xaxis!"
+    [dataLabels]="chartOptions.dataLabels!"
+    [stroke]="chartOptions.stroke!"
+    [title]="chartOptions.title!"
+    [grid]="chartOptions.grid!"
+    [tooltip]="chartOptions.tooltip!"
+    [markers]="chartOptions.markers!">
+  </apx-chart>
+
+</div>

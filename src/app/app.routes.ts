@@ -65,6 +65,11 @@ export const routes: Routes = [
         path: 'communes',
         loadChildren: () => 
           import('./pages/communes/communes.routes').then(m => m.CommunesRoutes)
+      },
+      {
+        path: 'reports',
+        loadChildren: () =>
+          import('./pages/reports/reports.routes').then(m => m.ReportsRoutes)
       }
     ],
   },
