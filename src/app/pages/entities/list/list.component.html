@@ -1,19 +1,34 @@
-<!-- list.component.html -->
-<app-optimized-table
-  title="Entidades registradas"
-  subtitle="Consulta, edita o elimina las entidades del sistema."
-  createLabel="Nueva entidad"
-  searchPlaceholder="Buscar por nombre..."
-  searchKey="name"
-  [columns]="columns"
-  [actions]="actions"
-  [data]="entities"
-  [loading]="loading"
-  [page]="page"
-  [pageSize]="pageSize"
-  [total]="total"
-  [totalPages]="totalPages"
-  (create)="openCreate()"
-  (action)="onAction($event)"
-  (pageChange)="goToPage($event)">
-</app-optimized-table>
+<div class="flex gap-4">
+
+  <!-- Tabla principal -->
+  <div class="flex-1 min-w-0">
+    <app-optimized-table
+      title="Entidades registradas"
+      subtitle="Consulta, edita o elimina las entidades del sistema."
+      createLabel="Nueva entidad"
+      searchPlaceholder="Buscar por nombre..."
+      searchKey="name"
+      [columns]="columns"
+      [actions]="actions"
+      [data]="entities"
+      [loading]="loading"
+      [page]="page"
+      [pageSize]="pageSize"
+      [total]="total"
+      [totalPages]="totalPages"
+      (create)="panel.open('Nueva entidad', 'create')"
+      (action)="onAction($event)"
+      (pageChange)="goToPage($event)">
+    </app-optimized-table>
+  </div>
+
+  <!-- Panel lateral -->
+  <app-side-panel>
+    <app-form
+      [entity]="editingEntity"
+      (formSubmit)="onFormSubmit($event)"
+      (cancel)="onFormCancel()">
+    </app-form>
+  </app-side-panel>
+
+</div>

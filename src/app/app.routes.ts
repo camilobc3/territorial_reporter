@@ -55,6 +55,16 @@ export const routes: Routes = [
         canActivateChild: [AuthenticatedGuard],
         loadChildren: () =>
           import('./pages/users/users.routes').then((m) => m.UserRoutes),
+      },
+      {
+        path: 'categories',
+        loadChildren: () => 
+          import('./pages/categories/categories.routes').then(m => m.categoriesRoutes)
+      },
+      {
+        path: 'communes',
+        loadChildren: () => 
+          import('./pages/communes/communes.routes').then(m => m.CommunesRoutes)
       }
     ],
   },
@@ -69,6 +79,7 @@ export const routes: Routes = [
             (m) => m.AuthenticationRoutes
           ),
       },
+      
     ],
   },
   {

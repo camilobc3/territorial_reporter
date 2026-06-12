@@ -18,6 +18,7 @@ import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
 import { navItems } from './sidebar/sidebar-data';
 import { User } from 'src/app/models/user';
 import { SecurityService } from 'src/app/services/security.service';
+import { GoogleAuthService } from 'src/app/services/google-auth.service';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -193,7 +194,8 @@ export class FullComponent implements OnInit {
     private router: Router,
     private breakpointObserver: BreakpointObserver,
     private navService: NavService, private cdr: ChangeDetectorRef,
-    private securityService: SecurityService
+    private securityService: SecurityService,
+    private googleAuth: GoogleAuthService
   ) {
     this.htmlElement = document.querySelector('html')!;
     this.layoutChangesSubscription = this.breakpointObserver
@@ -228,14 +230,21 @@ export class FullComponent implements OnInit {
     this.cdr.detectChanges(); // Ensures Angular updates the view
   }
 
+  // Agrega esto en el ngOnInit() del FullComponent
+// en src/app/layouts/full/full.component.ts
+
   ngOnInit(): void {
+    // Detectar si Google regresó con un token (flujo implícito)
+    const profile = this.googleAuth.getUserProfile();
+    if (profile) {
+      this.securityService.setUserFromGoogle(profile);
+    }
+
     this.userSubscription = this.securityService
       .getCurrentUser()
       .subscribe((user) => {
-        console.log('👤 Usuario actual en HeaderComponent:', user);
         this.user = user;
       });
-
   }
 
   ngOnDestroy() {
