@@ -74,6 +74,11 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'neighborhoods',
+        loadChildren: () => 
+          import('./pages/neighborhoods/neighborhoods.routes').then(m => m.NeighborhoodsRoutes)
+      },
+      {
         path: 'reports',
         loadChildren: () =>
           import('./pages/reports/reports.routes').then(
