@@ -1,0 +1,17 @@
+<div class="chart-card" *ngIf="chartOptions.series && chartOptions.series.length > 0">
+
+  <h3>Gráfica circular</h3>
+
+  <div class="chart-wrapper">
+    <apx-chart
+      [series]="chartOptions.series!"
+      [chart]="chartOptions.chart!"
+      [labels]="chartOptions.labels!"
+      [legend]="chartOptions.legend!"
+      [dataLabels]="chartOptions.dataLabels!"
+      [tooltip]="chartOptions.tooltip!"
+      [responsive]="chartOptions.responsive!">
+    </apx-chart>
+  </div>
+
+</div>

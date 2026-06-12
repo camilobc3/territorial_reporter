@@ -1,0 +1,15 @@
+<div class="chart-card" *ngIf="chartSeries.length > 0">
+
+  <h3>Gráfica de barras</h3>
+
+  <apx-chart
+    [series]="chartSeries"
+    [chart]="chart"
+    [xaxis]="xaxis"
+    [plotOptions]="plotOptions"
+    [dataLabels]="dataLabels"
+    [grid]="grid"
+    [tooltip]="tooltip">
+  </apx-chart>
+
+</div>

@@ -1,0 +1,35 @@
+<div class="reports-page">
+
+  <div class="header">
+    <h1>Reports</h1>
+    <p>Consulta información en lenguaje natural y genera reportes.</p>
+  </div>
+
+  <app-report-chat
+    [messages]="messages"
+    [loading]="loading"
+    [error]="error"
+    (querySubmitted)="onQuerySubmitted($event)">
+  </app-report-chat>
+  <ng-container *ngIf="reportData">
+
+    <app-bar-chart
+      *ngIf="reportData.type === 'bar'"
+      [labels]="reportData.labels"
+      [series]="axisSeries">
+    </app-bar-chart>
+
+    <app-line-chart
+      *ngIf="reportData.type === 'line'"
+      [labels]="reportData.labels"
+      [series]="axisSeries">
+    </app-line-chart>
+
+    <app-pie-chart
+      *ngIf="reportData.type === 'pie'"
+      [labels]="reportData.labels"
+      [series]="pieSeries">
+    </app-pie-chart>
+
+  </ng-container>
+</div>
