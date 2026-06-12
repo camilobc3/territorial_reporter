@@ -55,6 +55,11 @@ export const routes: Routes = [
         path: 'categories',
         loadChildren: () => 
           import('./pages/categories/categories.routes').then(m => m.categoriesRoutes)
+      },
+      {
+        path: 'communes',
+        loadChildren: () => 
+          import('./pages/communes/communes.routes').then(m => m.CommunesRoutes)
       }
     ],
   },
