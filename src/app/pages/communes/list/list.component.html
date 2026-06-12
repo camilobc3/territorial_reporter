@@ -1,100 +1,101 @@
 <div class="flex gap-4">
 
-    <!-- Contenido principal -->
-    <div class="flex-1 min-w-0 flex flex-col gap-4">
-  
-      <!-- Filtros de departamento y ciudad -->
+  <!-- Contenido principal -->
+  <div class="flex-1 min-w-0 flex flex-col gap-4">
+
+    <!-- Filtros -->
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex items-center gap-2 mb-3">
+          <mat-icon class="text-primary">filter_list</mat-icon>
+          <span class="font-semibold text-sm">Selecciona el territorio</span>
+          <span class="text-xs text-muted ml-1">— Filtra las comunas por departamento y ciudad</span>
+        </div>
+
+        <form [formGroup]="filterForm" class="flex flex-col sm:flex-row gap-4">
+
+          <!-- Departamento -->
+          <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
+            <mat-label>Departamento</mat-label>
+            <mat-select formControlName="department"
+              (selectionChange)="onDepartmentChange($event.value)">
+              @if (loadingDepts) {
+                <mat-option disabled>Cargando departamentos...</mat-option>
+              } @else if (departments.length === 0) {
+                <mat-option disabled>No hay departamentos registrados</mat-option>
+              } @else {
+                @for (dept of departments; track dept.id_department) {
+                  <mat-option [value]="dept.id_department">{{ dept.name }}</mat-option>
+                }
+              }
+            </mat-select>
+            <mat-icon matSuffix class="text-gray-400">location_on</mat-icon>
+          </mat-form-field>
+
+          <!-- Ciudad -->
+          <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
+            <mat-label>Ciudad</mat-label>
+            <mat-select formControlName="city"
+              (selectionChange)="onCityChange($event.value)">
+              @if (loadingCities) {
+                <mat-option disabled>Cargando ciudades...</mat-option>
+              } @else if (cities.length === 0) {
+                <mat-option disabled>Selecciona un departamento primero</mat-option>
+              } @else {
+                @for (city of cities; track city.id_city) {
+                  <mat-option [value]="city.id_city">{{ city.name }}</mat-option>
+                }
+              }
+            </mat-select>
+            <mat-icon matSuffix class="text-gray-400">apartment</mat-icon>
+          </mat-form-field>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tabla -->
+    @if (selectedCityId) {
+      <app-optimized-table
+        title="Comunas"
+        subtitle="Comunas registradas para la ciudad seleccionada."
+        createLabel="Nueva comuna"
+        searchPlaceholder="Buscar comuna..."
+        searchKey="name"
+        [columns]="columns"
+        [actions]="actions"
+        [data]="communes"
+        [loading]="loading"
+        [page]="page"
+        [pageSize]="pageSize"
+        [total]="total"
+        [totalPages]="totalPages"
+        (create)="openCreate()"
+        (action)="onAction($event)"
+        (pageChange)="goToPage($event)">
+      </app-optimized-table>
+    } @else {
       <mat-card class="cardWithShadow">
         <mat-card-content>
-          <div class="flex items-center gap-2 mb-3">
-            <mat-icon class="text-primary">filter_list</mat-icon>
-            <span class="font-semibold text-sm">Selecciona el territorio</span>
-            <span class="text-xs text-muted ml-1">— Filtra las comunas por departamento y ciudad</span>
+          <div class="flex flex-col items-center justify-center py-16 gap-3 text-gray-400">
+            <mat-icon style="font-size: 48px; width: 48px; height: 48px;">map</mat-icon>
+            <p class="text-base font-medium">Selecciona un departamento y una ciudad</p>
+            <p class="text-sm">Las comunas registradas aparecerán aquí.</p>
           </div>
-  
-          <form [formGroup]="filterForm" class="flex flex-col sm:flex-row gap-4">
-  
-            <!-- Departamento -->
-            <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
-              <mat-label>Departamento</mat-label>
-              <mat-select formControlName="department"
-                (selectionChange)="onDepartmentChange($event.value)">
-                @if (loadingDepts) {
-                  <mat-option disabled>Cargando departamentos...</mat-option>
-                } @else {
-                  @for (dept of colombiaDepartments; track dept.id) {
-                    <mat-option [value]="dept.id">{{ dept.name }}</mat-option>
-                  }
-                }
-              </mat-select>
-              <mat-icon matSuffix class="text-gray-400">location_on</mat-icon>
-            </mat-form-field>
-  
-            <!-- Ciudad -->
-            <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
-              <mat-label>Ciudad</mat-label>
-              <mat-select formControlName="city"
-                (selectionChange)="onCityChange($event.value)">
-                @if (loadingCities) {
-                  <mat-option disabled>Cargando ciudades...</mat-option>
-                } @else if (colombiaCities.length === 0) {
-                  <mat-option disabled>Selecciona un departamento primero</mat-option>
-                } @else {
-                  @for (city of colombiaCities; track city.id) {
-                    <mat-option [value]="city.id">{{ city.name }}</mat-option>
-                  }
-                }
-              </mat-select>
-              <mat-icon matSuffix class="text-gray-400">apartment</mat-icon>
-            </mat-form-field>
-  
-          </form>
         </mat-card-content>
       </mat-card>
-  
-      <!-- Tabla de comunas -->
-      @if (selectedCityId) {
-        <app-optimized-table
-          title="Comunas"
-          subtitle="Comunas registradas para la ciudad seleccionada."
-          createLabel="Nueva comuna"
-          searchPlaceholder="Buscar comuna..."
-          searchKey="name"
-          [columns]="columns"
-          [actions]="actions"
-          [data]="communes"
-          [loading]="loading"
-          [page]="page"
-          [pageSize]="pageSize"
-          [total]="total"
-          [totalPages]="totalPages"
-          (create)="openCreate()"
-          (action)="onAction($event)"
-          (pageChange)="goToPage($event)">
-        </app-optimized-table>
-      } @else {
-        <!-- Estado vacío antes de seleccionar ciudad -->
-        <mat-card class="cardWithShadow">
-          <mat-card-content>
-            <div class="flex flex-col items-center justify-center py-16 gap-3 text-gray-400">
-              <mat-icon style="font-size: 48px; width: 48px; height: 48px;">map</mat-icon>
-              <p class="text-base font-medium">Selecciona un departamento y una ciudad</p>
-              <p class="text-sm">Las comunas registradas aparecerán aquí.</p>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      }
-  
-    </div>
-  
-    <!-- Panel lateral -->
-    <app-side-panel>
-      <app-commune-form
-        [commune]="editingCommune"
-        [selectedCityId]="selectedCityId"
-        (formSubmit)="onFormSubmit($event)"
-        (cancelled)="onFormCancel()">
-      </app-commune-form>
-    </app-side-panel>
-  
+    }
+
   </div>
+
+  <!-- Panel lateral -->
+  <app-side-panel>
+    <app-commune-form
+      [commune]="editingCommune"
+      [selectedCityId]="selectedCityId"
+      (formSubmit)="onFormSubmit($event)"
+      (cancelled)="onFormCancel()">
+    </app-commune-form>
+  </app-side-panel>
+
+</div>
