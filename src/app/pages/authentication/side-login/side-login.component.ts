@@ -1,17 +1,59 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+
 import { MaterialModule } from 'src/app/material.module';
-import { GoogleAuthService } from '../../../services/google-auth.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { SecurityService } from 'src/app/services/security.service';
 
 @Component({
   selector: 'app-side-login',
-  imports: [RouterModule, MaterialModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MaterialModule
+  ],
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent {
-  constructor(private googleAuth: GoogleAuthService) {}
 
-  loginWithGoogle(): void {
-    this.googleAuth.loginWithGoogle();
+  loadingGoogle = false;
+  errorMessage = '';
+
+  constructor(
+    private authService: AuthService,
+    private securityService: SecurityService,
+    private router: Router
+  ) {}
+
+  async loginWithGoogle(): Promise<void> {
+    try {
+      this.loadingGoogle = true;
+      this.errorMessage = '';
+
+      const firebaseUser = await this.authService.loginWithGoogle();
+
+      const storedUser = this.authService.getUserFromLocalStorage();
+
+      if (storedUser) {
+        this.securityService.setUserFromFirebase(storedUser);
+      } else {
+        this.securityService.setUser({
+          name: firebaseUser.displayName || firebaseUser.email || 'Usuario',
+          email: firebaseUser.email || ''
+        });
+      }
+
+      console.log('Usuario autenticado con Firebase:', firebaseUser);
+      console.log('Token guardado:', this.authService.getTokenFromLocalStorage());
+      console.log('Usuario guardado:', this.authService.getUserFromLocalStorage());
+
+      this.router.navigate(['/dashboard']);
+    } catch (error) {
+      console.error('Error iniciando sesión con Google:', error);
+      this.errorMessage = 'No se pudo iniciar sesión con Google.';
+    } finally {
+      this.loadingGoogle = false;
+    }
   }
 }

@@ -28,7 +28,9 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 // Material
 import { MaterialModule } from './material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideAuth, getAuth } from '@angular/fire/auth';
+import { environment } from 'src/environments/environments';
 // OAuth
 import { provideOAuthClient } from 'angular-oauth2-oidc';
 
@@ -43,6 +45,8 @@ export const appConfig: ApplicationConfig = {
       }),
       withComponentInputBinding()
     ),
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideAuth(() => getAuth()),
     provideHttpClient(withInterceptorsFromDi()),
     provideClientHydration(),
     provideAnimationsAsync(),

@@ -1,31 +1,42 @@
-import { BreakpointObserver, MediaMatcher } from '@angular/cdk/layout';
-import { ChangeDetectorRef, Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
+
 import { Subscription } from 'rxjs';
 import { MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
+
 import { CoreService } from 'src/app/services/core.service';
 import { AppSettings } from 'src/app/config';
+
 import { filter } from 'rxjs/operators';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
+
 import { NavService } from '../../services/nav.service';
-import { RouterModule } from '@angular/router';
+
 import { MaterialModule } from 'src/app/material.module';
 import { CommonModule } from '@angular/common';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { TablerIconsModule } from 'angular-tabler-icons';
+
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { AppNavItemComponent } from './sidebar/nav-item/nav-item.component';
 import { navItems } from './sidebar/sidebar-data';
+
 import { User } from 'src/app/models/user';
 import { SecurityService } from 'src/app/services/security.service';
-import { GoogleAuthService } from 'src/app/services/google-auth.service';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
 const MONITOR_VIEW = 'screen and (min-width: 1024px)';
 const BELOWMONITOR = 'screen and (max-width: 1023px)';
 
-// for mobile app sidebar
 interface apps {
   id: number;
   img: string;
@@ -53,25 +64,33 @@ interface quicklinks {
     HeaderComponent,
   ],
   templateUrl: './full.component.html',
-
   encapsulation: ViewEncapsulation.None
 })
-export class FullComponent implements OnInit {
+export class FullComponent implements OnInit, OnDestroy {
+
   navItems = navItems;
 
-
-
   @ViewChild('leftsidenav')
-  public sidenav: MatSidenav;
+  public sidenav!: MatSidenav;
+
+  @ViewChild('content', { static: true })
+  content!: MatSidenavContent;
+
   resView = false;
-  @ViewChild('content', { static: true }) content!: MatSidenavContent;
-  //get options from service
+  showFiller = false;
+  isFilterNavOpen = false;
+
   options = this.settings.getOptions();
+
   private layoutChangesSubscription = Subscription.EMPTY;
+  private userSubscription?: Subscription;
+
   private isMobileScreen = false;
   private isContentWidthFixed = true;
   private isCollapsedWidthFixed = false;
   private htmlElement!: HTMLHtmlElement;
+
+  user: User | null = null;
 
   get isOver(): boolean {
     return this.isMobileScreen;
@@ -81,7 +100,6 @@ export class FullComponent implements OnInit {
     return this.resView;
   }
 
-  // for mobile app sidebar
   apps: apps[] = [
     {
       id: 1,
@@ -184,62 +202,40 @@ export class FullComponent implements OnInit {
     },
   ];
 
-  user: User | null = null;
-  private userSubscription?: Subscription;
-
-
   constructor(
     private settings: CoreService,
-    private mediaMatcher: MediaMatcher,
     private router: Router,
     private breakpointObserver: BreakpointObserver,
-    private navService: NavService, private cdr: ChangeDetectorRef,
-    private securityService: SecurityService,
-    private googleAuth: GoogleAuthService
+    private navService: NavService,
+    private cdr: ChangeDetectorRef,
+    private securityService: SecurityService
   ) {
     this.htmlElement = document.querySelector('html')!;
+
     this.layoutChangesSubscription = this.breakpointObserver
       .observe([MOBILE_VIEW, TABLET_VIEW, MONITOR_VIEW, BELOWMONITOR])
       .subscribe((state) => {
-        // SidenavOpened must be reset true when layout changes
         this.options.sidenavOpened = true;
         this.isMobileScreen = state.breakpoints[BELOWMONITOR];
-        if (this.options.sidenavCollapsed == false) {
+
+        if (this.options.sidenavCollapsed === false) {
           this.options.sidenavCollapsed = state.breakpoints[TABLET_VIEW];
         }
+
         this.isContentWidthFixed = state.breakpoints[MONITOR_VIEW];
         this.resView = state.breakpoints[BELOWMONITOR];
       });
 
-    // Initialize project theme with options
     this.receiveOptions(this.options);
 
-    // This is for scroll to top
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((e) => {
+      .subscribe(() => {
         this.content.scrollTo({ top: 0 });
       });
   }
 
-  isFilterNavOpen = false;
-
-  toggleFilterNav() {
-    this.isFilterNavOpen = !this.isFilterNavOpen;
-    console.log('Sidebar open:', this.isFilterNavOpen);
-    this.cdr.detectChanges(); // Ensures Angular updates the view
-  }
-
-  // Agrega esto en el ngOnInit() del FullComponent
-// en src/app/layouts/full/full.component.ts
-
   ngOnInit(): void {
-    // Detectar si Google regresó con un token (flujo implícito)
-    const profile = this.googleAuth.getUserProfile();
-    if (profile) {
-      this.securityService.setUserFromGoogle(profile);
-    }
-
     this.userSubscription = this.securityService
       .getCurrentUser()
       .subscribe((user) => {
@@ -247,25 +243,32 @@ export class FullComponent implements OnInit {
       });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.layoutChangesSubscription.unsubscribe();
+    this.userSubscription?.unsubscribe();
   }
 
-  toggleCollapsed() {
+  toggleFilterNav(): void {
+    this.isFilterNavOpen = !this.isFilterNavOpen;
+    console.log('Sidebar open:', this.isFilterNavOpen);
+    this.cdr.detectChanges();
+  }
+
+  toggleCollapsed(): void {
     this.isContentWidthFixed = false;
     this.options.sidenavCollapsed = !this.options.sidenavCollapsed;
     this.resetCollapsedState();
   }
 
-  resetCollapsedState(timer = 400) {
+  resetCollapsedState(timer = 400): void {
     setTimeout(() => this.settings.setOptions(this.options), timer);
   }
 
-  onSidenavClosedStart() {
+  onSidenavClosedStart(): void {
     this.isContentWidthFixed = false;
   }
 
-  onSidenavOpenedChange(isOpened: boolean) {
+  onSidenavOpenedChange(isOpened: boolean): void {
     this.isCollapsedWidthFixed = !this.isOver;
     this.options.sidenavOpened = isOpened;
     this.settings.setOptions(this.options);
@@ -276,7 +279,7 @@ export class FullComponent implements OnInit {
     this.toggleColorsTheme(options);
   }
 
-  toggleDarkTheme(options: AppSettings) {
+  toggleDarkTheme(options: AppSettings): void {
     if (options.theme === 'dark') {
       this.htmlElement.classList.add('dark-theme');
       this.htmlElement.classList.remove('light-theme');
@@ -286,15 +289,13 @@ export class FullComponent implements OnInit {
     }
   }
 
-  toggleColorsTheme(options: AppSettings) {
-    // Remove any existing theme class dynamically
+  toggleColorsTheme(options: AppSettings): void {
     this.htmlElement.classList.forEach((className) => {
       if (className.endsWith('_theme')) {
         this.htmlElement.classList.remove(className);
       }
     });
 
-    // Add the selected theme class
     this.htmlElement.classList.add(options.activeTheme);
   }
 }

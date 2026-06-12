@@ -7,21 +7,24 @@ import {
   OnInit,
   OnDestroy,
 } from '@angular/core';
+
+import { Router, RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
+
 import { CoreService } from 'src/app/services/core.service';
 import { SecurityService } from 'src/app/services/security.service';
-import { Subscription } from 'rxjs';
+import { NotificationService } from 'src/app/services/notification.service';
+import { AuthService } from 'src/app/services/auth.service';
+
 import { User } from 'src/app/models/user';
+import { AppSettings } from 'src/app/config';
+
 import { MatDialog } from '@angular/material/dialog';
-import { navItems } from '../sidebar/sidebar-data';
 import { TranslateService } from '@ngx-translate/core';
+
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { MaterialModule } from 'src/app/material.module';
-import { RouterModule } from '@angular/router';
-
-import { FormsModule } from '@angular/forms';
 import { NgScrollbarModule } from 'ngx-scrollbar';
-import { AppSettings } from 'src/app/config';
-import { NotificationService } from 'src/app/services/notification.service';
 
 interface notifications {
   id: number;
@@ -50,69 +53,83 @@ interface profiledd {
   encapsulation: ViewEncapsulation.None
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+
   @Input() showToggle = true;
   @Input() toggleChecked = false;
+
   @Output() toggleMobileNav = new EventEmitter<void>();
   @Output() toggleMobileFilterNav = new EventEmitter<void>();
   @Output() toggleCollapsed = new EventEmitter<void>();
+  @Output() optionsChange = new EventEmitter<AppSettings>();
 
   showFiller = false;
 
-  @Output() optionsChange = new EventEmitter<AppSettings>();
+  user: User | null = null;
 
+  private userSubscription?: Subscription;
+  private notificationSubscription?: Subscription;
 
+  options = this.settings.getOptions();
 
-  
   constructor(
     private settings: CoreService,
     private vsidenav: CoreService,
     public dialog: MatDialog,
     private translate: TranslateService,
     private securityService: SecurityService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService: AuthService,
+    private router: Router
   ) {
     translate.setDefaultLang('en');
   }
 
-  user: User | null = null;
-  private userSubscription?: Subscription;
-
   ngOnInit(): void {
     console.log('HeaderComponent ngOnInit: suscribiéndose a usuario actual...');
+
     this.userSubscription = this.securityService
       .getCurrentUser()
       .subscribe((user) => {
-        console.log('👤 Usuario actual en HeaderComponent:', user);
+        console.log('Usuario actual en HeaderComponent:', user);
         this.user = user;
       });
-      //WebSocket
-      console.log('HeaderComponent ngOnInit: suscribiéndose a notificaciones...');
-      this.notificationService
-      .onNewNotification("new_notification")
+
+    console.log('HeaderComponent ngOnInit: suscribiéndose a notificaciones...');
+
+    this.notificationSubscription = this.notificationService
+      .onNewNotification('new_notification')
       .subscribe((data: any) => {
-
         console.log('Notificación recibida:', data);
-
         this.notifications.push(data);
       });
   }
 
   ngOnDestroy(): void {
     this.userSubscription?.unsubscribe();
-
+    this.notificationSubscription?.unsubscribe();
   }
 
-  options = this.settings.getOptions();
-
-  // removed currentUser$ — using direct subscription to set `user`
-
-  private emitOptions() {
+  private emitOptions(): void {
     this.optionsChange.emit(this.options);
   }
 
-  setlightDark(theme: string) {
+  setlightDark(theme: string): void {
     this.options.theme = theme;
     this.emitOptions();
+  }
+
+  getUserDisplayName(): string {
+    return this.user?.name || this.user?.email || 'Usuario';
+  }
+
+  async logout(): Promise<void> {
+    try {
+      await this.authService.logout();
+      this.securityService.clearUser();
+      this.router.navigate(['/authentication/login']);
+    } catch (error) {
+      console.error('Error cerrando sesión:', error);
+    }
   }
 
   notifications: notifications[] = [

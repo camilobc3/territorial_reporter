@@ -27,7 +27,7 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './hierarchical-table.component.html',
+  templateUrl:   './hierarchical-table.component.html',
 })
 export class HierarchicalTableComponent<T extends Record<string, any>>
   implements OnChanges {

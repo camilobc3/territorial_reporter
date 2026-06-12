@@ -1,28 +1,46 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
-import { of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
-import { SecurityService } from '../services/security.service';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  CanActivateChild,
+  Router,
+  RouterStateSnapshot,
+  UrlTree
+} from '@angular/router';
+
+import { StorageService } from '../services/storage/storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class NoAuthenticatedGuard implements  CanActivateChild {
+export class NoAuthenticatedGuard implements CanActivate, CanActivateChild {
 
-  constructor(private securityService: SecurityService,
+  constructor(
+    private storageService: StorageService,
     private router: Router
   ) {}
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    return this.securityService.me().pipe(
-      tap((user) => this.securityService.setUser(user)),
-      map((user) => !user),
-      catchError(() => {
-        this.router.navigate(['/authentication/login']);
-        this.securityService.clearUser();
-        return of(true);
-      })
-    );
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): boolean | UrlTree {
+    return this.validateNoAuthentication();
   }
 
+  canActivateChild(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): boolean | UrlTree {
+    return this.validateNoAuthentication();
+  }
+
+  private validateNoAuthentication(): boolean | UrlTree {
+    const token = this.storageService.getItem('firebase_token');
+
+    if (!token) {
+      return true;
+    }
+
+    return this.router.createUrlTree(['/dashboard']);
+  }
 }

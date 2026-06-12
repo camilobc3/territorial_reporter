@@ -1,30 +1,46 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot } from '@angular/router';
-import { of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
-import { SecurityService } from '../services/security.service';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  CanActivateChild,
+  Router,
+  RouterStateSnapshot,
+  UrlTree
+} from '@angular/router';
+
+import { StorageService } from '../services/storage/storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthenticatedGuard implements  CanActivateChild {
+export class AuthenticatedGuard implements CanActivate, CanActivateChild {
 
-  constructor(private securityService: SecurityService,
+  constructor(
+    private storageService: StorageService,
     private router: Router
   ) {}
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    return true;
-    // console.log('🔒 Verificando autenticación para ruta:', state.url);
-    // return this.securityService.me().pipe(
-    //   tap((user) => this.securityService.setUser(user)),
-    //   map((user) => !!user),
-    //   catchError(() => {
-    //     this.router.navigate(['/authentication/login']);
-    //     this.securityService.clearUser();
-    //     return of(false);
-    //   })
-    // );
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): boolean | UrlTree {
+    return this.validateAuthentication();
   }
 
+  canActivateChild(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): boolean | UrlTree {
+    return this.validateAuthentication();
+  }
+
+  private validateAuthentication(): boolean | UrlTree {
+    const token = this.storageService.getItem('firebase_token');
+
+    if (token) {
+      return true;
+    }
+
+    return this.router.createUrlTree(['/authentication/login']);
+  }
 }

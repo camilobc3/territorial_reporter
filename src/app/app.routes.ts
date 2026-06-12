@@ -1,12 +1,16 @@
 import { Routes } from '@angular/router';
+
 import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
+
 import { AuthenticatedGuard } from './guards/authenticated.guard';
+import { NoAuthenticatedGuard } from './guards/no-authenticated.guard';
 
 export const routes: Routes = [
   {
     path: '',
     component: FullComponent,
+    canActivateChild: [AuthenticatedGuard],
     children: [
       {
         path: '',
@@ -29,7 +33,7 @@ export const routes: Routes = [
           import('./pages/entities/entities.routes').then((m) => m.EntitiesRoutes),
       },
       {
-      path: 'officials',
+        path: 'officials',
         loadChildren: () =>
           import('./pages/officials/officials.routes').then((m) => m.OfficialRoutes),
       },
@@ -52,30 +56,36 @@ export const routes: Routes = [
       },
       {
         path: 'users',
-        canActivateChild: [AuthenticatedGuard],
         loadChildren: () =>
           import('./pages/users/users.routes').then((m) => m.UserRoutes),
       },
       {
         path: 'categories',
-        loadChildren: () => 
-          import('./pages/categories/categories.routes').then(m => m.categoriesRoutes)
+        loadChildren: () =>
+          import('./pages/categories/categories.routes').then(
+            (m) => m.categoriesRoutes
+          ),
       },
       {
         path: 'communes',
-        loadChildren: () => 
-          import('./pages/communes/communes.routes').then(m => m.CommunesRoutes)
+        loadChildren: () =>
+          import('./pages/communes/communes.routes').then(
+            (m) => m.CommunesRoutes
+          ),
       },
       {
         path: 'reports',
         loadChildren: () =>
-          import('./pages/reports/reports.routes').then(m => m.ReportsRoutes)
-      }
+          import('./pages/reports/reports.routes').then(
+            (m) => m.ReportsRoutes
+          ),
+      },
     ],
   },
   {
     path: '',
     component: BlankComponent,
+    canActivateChild: [NoAuthenticatedGuard],
     children: [
       {
         path: 'authentication',
@@ -84,7 +94,6 @@ export const routes: Routes = [
             (m) => m.AuthenticationRoutes
           ),
       },
-      
     ],
   },
   {
