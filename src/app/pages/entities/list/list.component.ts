@@ -6,6 +6,7 @@ import { OptimizedTableComponent, OptimizedActionButton } from 'src/app/componen
 import { OptimizedColumnDef } from 'src/app/components/ui/optimized-table/optimized-table/optimized-column-def';
 import { SidePanelComponent } from 'src/app/components/ui/side-panel/side-panel.component';
 import { SidePanelUtils } from 'src/app/components/ui/side-panel/side-panel.utils';
+import { Router } from '@angular/router';
 import { FormComponent } from '../components/form/form.component';
 import { environment } from 'src/environments/environments';
 import Swal from 'sweetalert2';
@@ -63,7 +64,8 @@ export class ListComponent implements OnInit {
 
   constructor(
     private entitiesService: EntitiesService,
-    public panel: SidePanelUtils
+    public panel: SidePanelUtils,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -101,6 +103,11 @@ export class ListComponent implements OnInit {
   // ── Acciones de tabla ──────────────────────────────────────────────────────
 
   onAction(event: { actionId: string; row: Entity }): void {
+    if (event.actionId === 'officials') {
+      this.router.navigate(['/officials/list'], {
+        queryParams: { id_entity: event.row.id_entity },
+      });
+    }
     if (event.actionId === 'edit') {
       this.editingEntity = event.row;
       this.panel.open('Editar entidad', 'edit');
@@ -112,16 +119,6 @@ export class ListComponent implements OnInit {
 
   // ── Submit del formulario ──────────────────────────────────────────────────
 
-<<<<<<< HEAD
-  onAction(event: { actionId: string; row: Entity }) {
-    if (event.actionId === 'officials') {
-      this.router.navigate(['/officials/list'], {
-        queryParams: { id_entity: event.row.id_entity },
-      });
-    }
-    if (event.actionId === 'edit')   this.router.navigate([`/entities/update/${event.row.id_entity}`]);
-    if (event.actionId === 'delete') this.confirmDelete(event.row);
-=======
   onFormSubmit(fd: FormData): void {
     const isCreate = this.panel.mode === 'create';
     const request$ = isCreate
@@ -147,7 +144,6 @@ export class ListComponent implements OnInit {
         Swal.fire({ icon: 'error', title: 'Error', text: msg });
       },
     });
->>>>>>> 1e164eae8fd718fe2a031e13092e2fc2abd85320
   }
 
   onFormCancel(): void {

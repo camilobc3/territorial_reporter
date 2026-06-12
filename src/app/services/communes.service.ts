@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { environment } from '../../environments/environments';
 import { Commune } from '../models/commune';
@@ -56,10 +57,16 @@ export class CommunesService {
   /**
    * Obtener comunas por ciudad
    * GET /communes?id_city=
+   *
+   * ⚠️ El backend actualmente ignora el query param `id_city` y
+   * devuelve todas las comunas. Se filtra en el frontend como
+   * solución temporal hasta que se corrija el endpoint.
    */
   getByCity(idCity: number): Observable<Commune[]> {
     const params = new HttpParams().set('id_city', String(idCity));
-    return this.http.get<Commune[]>(this.apiUrl, { params });
+    return this.http.get<Commune[]>(this.apiUrl, { params }).pipe(
+      map(communes => communes.filter(c => c.id_city === idCity))
+    );
   }
 
   /**

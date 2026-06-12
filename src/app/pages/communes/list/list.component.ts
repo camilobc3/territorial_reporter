@@ -13,11 +13,7 @@ import { SidePanelComponent } from 'src/app/components/ui/side-panel/side-panel.
 import { OptimizedTableComponent, OptimizedActionButton } from 'src/app/components/ui/optimized-table/optimized-table/optimized-table.component';
 import { OptimizedColumnDef } from 'src/app/components/ui/optimized-table/optimized-table/optimized-column-def';
 import { CommuneFormComponent } from '../components/commune-form/commune-form.component';
-import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
-
-interface ColombiaCity       { id: number; name: string; }
-interface ColombiaDepartment { id: number; name: string; }
 
 @Component({
   selector: 'app-list',
@@ -45,13 +41,11 @@ export class ListComponent implements OnInit {
   // ── Filtros ────────────────────────────────────────────────────────────────
   filterForm!: FormGroup;
 
-  /** Listas de la API Colombia */
-  colombiaDepartments: ColombiaDepartment[] = [];
-  colombiaCities: ColombiaCity[] = [];
+  departments: Department[] = [];
+  cities: City[] = [];
   loadingDepts = false;
   loadingCities = false;
 
-  /** Ciudad seleccionada actualmente (para pasarla al form) */
   selectedCityId: number | null = null;
 
   // ── Panel ──────────────────────────────────────────────────────────────────
@@ -59,7 +53,7 @@ export class ListComponent implements OnInit {
 
   // ── Configuración tabla ────────────────────────────────────────────────────
   columns: OptimizedColumnDef[] = [
-    { key: 'name',   header: 'Nombre' },
+    { key: 'name', header: 'Nombre' },
     {
       key: 'status', header: 'Estado', type: 'badge',
       badgeOptions: [
@@ -75,13 +69,10 @@ export class ListComponent implements OnInit {
     { id: 'delete', icon: 'delete', tooltip: 'Eliminar', iconClass: 'text-error'   },
   ];
 
-  private readonly COLOMBIA_API = 'https://api-colombia.com/api/v1';
-
   constructor(
     private communesService: CommunesService,
     private departmentService: DepartmentService,
     private cityService: CityService,
-    private http: HttpClient,
     private fb: FormBuilder,
     public panel: SidePanelUtils,
   ) {}
@@ -92,36 +83,37 @@ export class ListComponent implements OnInit {
       city:       [{ value: null, disabled: true }, Validators.required],
     });
 
-    this.loadColombiaDepartments();
+    this.loadDepartments();
   }
 
-  // ── API Colombia ───────────────────────────────────────────────────────────
+  // ── Cargar departamentos del backend ───────────────────────────────────────
 
-  loadColombiaDepartments(): void {
+  loadDepartments(): void {
     this.loadingDepts = true;
-    this.http.get<ColombiaDepartment[]>(`${this.COLOMBIA_API}/Department`).subscribe({
+    this.departmentService.getAll().subscribe({
       next: (depts) => {
-        this.colombiaDepartments = depts.sort((a, b) => a.name.localeCompare(b.name));
+        this.departments = depts.sort((a, b) => a.name.localeCompare(b.name));
         this.loadingDepts = false;
       },
       error: () => { this.loadingDepts = false; }
     });
   }
 
-  onDepartmentChange(colombiaId: number): void {
-    // Limpiar ciudad y tabla
+  // ── Al seleccionar departamento → cargar ciudades del backend ──────────────
+
+  onDepartmentChange(idDepartment: number): void {
     this.filterForm.get('city')!.reset();
     this.filterForm.get('city')!.disable();
-    this.colombiaCities = [];
+    this.cities = [];
     this.communes = [];
     this.selectedCityId = null;
 
-    if (!colombiaId) return;
+    if (!idDepartment) return;
 
     this.loadingCities = true;
-    this.http.get<ColombiaCity[]>(`${this.COLOMBIA_API}/Department/${colombiaId}/cities`).subscribe({
+    this.cityService.getByDepartment(idDepartment).subscribe({
       next: (cities) => {
-        this.colombiaCities = cities.sort((a, b) => a.name.localeCompare(b.name));
+        this.cities = cities.sort((a, b) => a.name.localeCompare(b.name));
         this.filterForm.get('city')!.enable();
         this.loadingCities = false;
       },
@@ -129,35 +121,12 @@ export class ListComponent implements OnInit {
     });
   }
 
-  onCityChange(colombiaCityId: number): void {
-    if (!colombiaCityId) return;
+  // ── Al seleccionar ciudad → cargar comunas ─────────────────────────────────
 
-    // Buscar la ciudad en nuestro backend por nombre
-    // (la API Colombia usa su propio ID, nuestro backend usa id_city propio)
-    const colombiaCity = this.colombiaCities.find(c => c.id === colombiaCityId);
-    if (!colombiaCity) return;
-
-    // Buscar en nuestro backend la ciudad que coincide con ese nombre
-    this.cityService.getAll().subscribe({
-      next: (cities) => {
-        const match = cities.find(c =>
-          c.name.toLowerCase().trim() === colombiaCity.name.toLowerCase().trim()
-        );
-        if (match?.id_city) {
-          this.selectedCityId = match.id_city;
-          this.loadCommunes(match.id_city);
-        } else {
-          // La ciudad existe en API Colombia pero no en nuestro backend aún
-          this.communes = [];
-          this.total = 0;
-          Swal.fire({
-            icon: 'info',
-            title: 'Ciudad no registrada',
-            text: `La ciudad "${colombiaCity.name}" aún no está registrada en el sistema.`,
-          });
-        }
-      }
-    });
+  onCityChange(idCity: number): void {
+    if (!idCity) return;
+    this.selectedCityId = idCity;
+    this.loadCommunes(idCity);
   }
 
   // ── Carga de comunas ───────────────────────────────────────────────────────
@@ -166,7 +135,6 @@ export class ListComponent implements OnInit {
     this.loading = true;
     this.communesService.getByCity(idCity).subscribe({
       next: (items: any) => {
-        // Soporta respuesta plana o paginada
         const list = Array.isArray(items) ? items : (items.items ?? items.data ?? []);
         this.communes   = list;
         this.total      = list.length;
@@ -214,6 +182,11 @@ export class ListComponent implements OnInit {
   // ── Submit ─────────────────────────────────────────────────────────────────
 
   onFormSubmit(data: Partial<Commune>): void {
+    // Garantizar que id_city siempre esté presente
+    if (!data.id_city && this.selectedCityId) {
+      data.id_city = this.selectedCityId;
+    }
+
     const isCreate = this.panel.mode === 'create';
     const request$ = isCreate
       ? this.communesService.create(data as Omit<Commune, 'id_commune'>)
