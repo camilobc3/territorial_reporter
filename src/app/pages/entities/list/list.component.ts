@@ -59,6 +59,7 @@ export class ListComponent implements OnInit {
   ];
 
   actions: OptimizedActionButton[] = [
+    { id: 'officials', icon: 'groups', tooltip: 'Ver funcionarios', iconClass: 'text-secondary' },
     { id: 'edit',   icon: 'edit',   tooltip: 'Editar',   iconClass: 'text-primary' },
     { id: 'delete', icon: 'delete', tooltip: 'Eliminar', iconClass: 'text-error'   },
   ];
@@ -109,6 +110,11 @@ export class ListComponent implements OnInit {
   // ---------- Acciones de tabla ----------
 
   onAction(event: { actionId: string; row: Entity }) {
+    if (event.actionId === 'officials') {
+      this.router.navigate(['/officials/list'], {
+        queryParams: { id_entity: event.row.id_entity },
+      });
+    }
     if (event.actionId === 'edit')   this.router.navigate([`/entities/update/${event.row.id_entity}`]);
     if (event.actionId === 'delete') this.confirmDelete(event.row);
   }

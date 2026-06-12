@@ -1,0 +1,9 @@
+@if (official) {
+  <app-components
+    [official]="official"
+    (formSubmit)="onUpdate($event)"
+    (cancel)="onCancel()">
+  </app-components>
+} @else {
+  <p>Cargando funcionario...</p>
+}

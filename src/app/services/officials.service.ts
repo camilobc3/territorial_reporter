@@ -1,9 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { environment } from '../../environments/environments';
 import { Official } from '../models/official';
+
+type PagedResponse = {
+  data: Official[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+};
 
 @Injectable({
   providedIn: 'root'
@@ -26,23 +34,52 @@ export class OfficialsService {
    * Obtener funcionarios paginados
    * GET /officials?page=&pageSize=
    */
-  getPaged(page: number, pageSize: number): Observable<{
-    data: Official[];
-    page: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-  }> {
+  getPaged(page: number, pageSize: number): Observable<PagedResponse> {
     const params = new HttpParams()
       .set('page', String(page))
       .set('pageSize', String(pageSize));
-    return this.http.get<{
-      data: Official[];
-      page: number;
-      pageSize: number;
-      totalItems: number;
-      totalPages: number;
-    }>(this.apiUrl, { params });
+
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map((resp) => {
+        if (Array.isArray(resp)) {
+          return {
+            data: resp as Official[],
+            page: 1,
+            pageSize: resp.length,
+            totalItems: resp.length,
+            totalPages: 1,
+          };
+        }
+
+        if (resp?.items) {
+          return {
+            data: resp.items as Official[],
+            page: resp.page ?? 1,
+            pageSize: resp.pageSize ?? pageSize,
+            totalItems: resp.totalItems ?? resp.items.length,
+            totalPages: resp.totalPages ?? 1,
+          };
+        }
+
+        if (resp?.data) {
+          return {
+            data: resp.data as Official[],
+            page: resp.page ?? 1,
+            pageSize: resp.pageSize ?? pageSize,
+            totalItems: resp.totalItems ?? resp.data.length,
+            totalPages: resp.totalPages ?? 1,
+          };
+        }
+
+        return {
+          data: [],
+          page: 1,
+          pageSize,
+          totalItems: 0,
+          totalPages: 1,
+        };
+      })
+    );
   }
 
   /**
@@ -59,7 +96,21 @@ export class OfficialsService {
    */
   getByEntity(idEntity: number): Observable<Official[]> {
     const params = new HttpParams().set('id_entity', String(idEntity));
-    return this.http.get<Official[]>(this.apiUrl, { params });
+    return this.http.get<any>(this.apiUrl, { params }).pipe(
+      map((resp) => {
+        let officials: Official[] = [];
+
+        if (Array.isArray(resp)) {
+          officials = resp as Official[];
+        } else if (resp?.items) {
+          officials = resp.items as Official[];
+        } else if (resp?.data) {
+          officials = resp.data as Official[];
+        }
+
+        return officials.filter((official) => Number(official.id_entity) === idEntity);
+      })
+    );
   }
 
   /**

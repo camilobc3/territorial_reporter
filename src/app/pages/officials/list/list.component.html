@@ -1,0 +1,18 @@
+<app-optimized-table
+  title="Funcionarios registrados"
+  subtitle="Consulta, edita o elimina los funcionarios del sistema."
+  createLabel="Nuevo funcionario"
+  searchPlaceholder="Buscar por funcionario..."
+  searchKey="name"
+  [columns]="columns"
+  [actions]="actions"
+  [data]="officials"
+  [loading]="loading"
+  [page]="page"
+  [pageSize]="pageSize"
+  [total]="total"
+  [totalPages]="totalPages"
+  (create)="openCreate()"
+  (action)="onAction($event)"
+  (pageChange)="goToPage($event)">
+</app-optimized-table>
