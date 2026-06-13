@@ -1,0 +1,116 @@
+<div class="w-72 flex flex-col gap-4">
+
+    <!-- Herramientas -->
+    <mat-card class="cardWithShadow">
+      <mat-card-header>
+        <mat-card-title class="text-sm font-semibold">Herramientas</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="flex flex-col gap-2 pt-2">
+        <p class="text-xs text-muted">
+          Usa los botones para dibujar o editar el polígono del barrio.
+        </p>
+        <mat-divider></mat-divider>
+  
+        <!-- Dibujar -->
+        <button mat-flat-button color="primary" class="w-full"
+          [disabled]="!selectedNeighborhood || drawMode === 'drawing' || drawMode === 'editing'"
+          (click)="startDraw.emit()">
+          <mat-icon>edit</mat-icon>
+          {{ drawMode === 'drawing' ? 'Dibujando...' : 'Dibujar polígono' }}
+        </button>
+  
+        <!-- Cancelar dibujo -->
+        @if (drawMode === 'drawing') {
+          <button mat-stroked-button class="w-full" (click)="stopDraw.emit()">
+            <mat-icon>close</mat-icon>
+            Cancelar dibujo
+          </button>
+        }
+  
+        <!-- Editar -->
+        @if (drawMode !== 'editing') {
+          <button mat-stroked-button color="accent" class="w-full"
+            [disabled]="!selectedNeighborhood || coordinates.length === 0 || drawMode !== 'none'"
+            (click)="startEdit.emit()">
+            <mat-icon>tune</mat-icon>
+            Editar polígono
+          </button>
+        }
+  
+        <!-- Confirmar edición -->
+        @if (drawMode === 'editing') {
+          <button mat-flat-button color="primary" class="w-full" (click)="confirmEdit.emit()">
+            <mat-icon>check</mat-icon>
+            Confirmar edición
+          </button>
+          <button mat-stroked-button class="w-full" (click)="stopDraw.emit()">
+            <mat-icon>close</mat-icon>
+            Cancelar edición
+          </button>
+        }
+  
+        <mat-divider></mat-divider>
+  
+        <!-- Limpiar -->
+        <button mat-stroked-button color="warn" class="w-full"
+          [disabled]="!selectedNeighborhood || coordinates.length === 0"
+          (click)="clear.emit()">
+          <mat-icon>layers_clear</mat-icon>
+          Limpiar polígono
+        </button>
+  
+      </mat-card-content>
+    </mat-card>
+  
+    <!-- Coordenadas -->
+    <mat-card class="cardWithShadow flex-1">
+      <mat-card-header>
+        <mat-card-title class="text-sm font-semibold">Coordenadas</mat-card-title>
+        <mat-card-subtitle class="text-xs">
+          {{ coordinates.length ? coordinates.length + ' puntos' : 'Sin polígono' }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (coordinates.length === 0) {
+          <div class="flex flex-col items-center justify-center py-8 gap-2 text-gray-400">
+            <mat-icon>polyline</mat-icon>
+            <p class="text-xs">Dibuja un polígono en el mapa</p>
+          </div>
+        } @else {
+          <div class="flex flex-col gap-1 max-h-64 overflow-y-auto">
+            @for (coord of coordinates; track $index) {
+              <div class="flex items-center gap-2 text-xs py-1 border-b border-gray-100">
+                <span class="text-muted w-5">{{ $index + 1 }}</span>
+                <span class="font-mono">{{ coord[1] | number:'1.5-5' }}</span>
+                <span class="text-muted">,</span>
+                <span class="font-mono">{{ coord[0] | number:'1.5-5' }}</span>
+              </div>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  
+    <!-- Acciones -->
+    <mat-card class="cardWithShadow">
+      <mat-card-content class="flex flex-col gap-2 pt-2">
+        <button mat-stroked-button class="w-full"
+          [disabled]="saving"
+          (click)="cancel.emit()">
+          <mat-icon>close</mat-icon>
+          Cancelar
+        </button>
+        <button mat-flat-button color="primary" class="w-full"
+          [disabled]="!hasChanges || saving || !selectedNeighborhood"
+          (click)="save.emit()">
+          @if (saving) {
+            <mat-spinner diameter="18" class="inline-block mr-2"></mat-spinner>
+          } @else {
+            <mat-icon>save</mat-icon>
+          }
+          Guardar polígono
+        </button>
+      </mat-card-content>
+    </mat-card>
+  
+  </div>
