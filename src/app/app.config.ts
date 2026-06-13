@@ -36,6 +36,7 @@ import { provideOAuthClient } from 'angular-oauth2-oidc';
 // APIs mapa
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),

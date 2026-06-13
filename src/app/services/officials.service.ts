@@ -123,6 +123,22 @@ export class OfficialsService {
   }
 
   /**
+   * Iniciar el seguimiento en tiempo real de funcionarios
+   * POST /officials/tracking/start
+   */
+  startTracking(ids: number[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/tracking/start`, { ids });
+  }
+
+  /**
+   * Detener el seguimiento en tiempo real de funcionarios
+   * POST /officials/tracking/stop
+   */
+  stopTracking(ids?: number[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/tracking/stop`, ids?.length ? { ids } : {});
+  }
+
+  /**
    * Crear funcionario
    * POST /officials
    */

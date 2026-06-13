@@ -40,6 +40,12 @@ export const navItems: NavItem[] = [
   },
 
   {
+    displayName: 'Mapa',
+    iconName: 'solar:point-on-map-perspective-line-duotone',
+    route: '/tracking',
+  },
+
+  {
     navCap: 'Pages',
   },
   {

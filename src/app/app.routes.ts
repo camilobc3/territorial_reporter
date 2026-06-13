@@ -43,6 +43,11 @@ export const routes: Routes = [
           import('./pages/citizens/citizens.routes').then((m) => m.CitizenRoutes),
       },
       {
+        path: 'tracking',
+        loadChildren: () =>
+          import('./pages/tracking/tracking.routes').then((m) => m.TrackingRoutes),
+      },
+      {
         path: 'ui-components',
         loadChildren: () =>
           import('./pages/ui-components/ui-components.routes').then(

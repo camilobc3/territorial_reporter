@@ -1,0 +1,166 @@
+<!-- ============================================================== -->
+<!-- Seguimiento en tiempo real de funcionarios -->
+<!-- ============================================================== -->
+<div class="flex flex-col gap-4">
+
+  <!-- Encabezado -->
+  <div>
+    <div class="flex items-center gap-2">
+      <h2 class="text-2xl font-semibold m-0">Seguimiento en tiempo real</h2>
+      <span class="flex items-center gap-1 text-xs font-semibold text-success bg-light-success rounded-full px-2 py-0.5">
+        <span class="inline-block w-2 h-2 rounded-full bg-success"></span>
+        En vivo
+      </span>
+    </div>
+    <p class="text-sm text-muted mt-1">
+      Visualiza la ubicación actual de los funcionarios activos.
+    </p>
+  </div>
+
+  <!-- Filtros y estadísticas -->
+  <mat-card class="cardWithShadow mb-0!">
+    <mat-card-content>
+      <div class="flex flex-col lg:flex-row lg:items-center gap-4 justify-between">
+
+        <!-- Filtro por entidad -->
+        <mat-form-field appearance="outline" class="w-full lg:w-72" color="primary" subscriptSizing="dynamic">
+          <mat-label>Filtrar por entidad</mat-label>
+          <mat-select [(ngModel)]="selectedEntityId" (selectionChange)="onEntityChange()">
+            <mat-option [value]="null">Todas las entidades</mat-option>
+            @for (entity of entities; track entity.id_entity) {
+              <mat-option [value]="entity.id_entity">{{ entity.name }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon matSuffix class="text-gray-400">apartment</mat-icon>
+        </mat-form-field>
+
+        <!-- Estadísticas -->
+        <div class="flex items-center gap-6">
+          <div class="text-center">
+            <div class="text-xs text-muted whitespace-nowrap">Funcionarios activos</div>
+            <div class="flex items-center justify-center gap-1.5 text-lg font-semibold text-success">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-success"></span>
+              {{ activeCount }}
+            </div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-muted whitespace-nowrap">Sin conexión</div>
+            <div class="flex items-center justify-center gap-1.5 text-lg font-semibold text-muted">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-gray-400"></span>
+              {{ offlineCount }}
+            </div>
+          </div>
+          <div class="text-center">
+            <div class="text-xs text-muted whitespace-nowrap">Total</div>
+            <div class="text-lg font-semibold">{{ total }}</div>
+          </div>
+        </div>
+
+        <!-- Última actualización + refrescar -->
+        <div class="flex items-center gap-3">
+          @if (lastUpdate) {
+            <span class="text-xs text-muted whitespace-nowrap">
+              Última actualización: {{ lastUpdate | date:'shortTime' }}
+            </span>
+          }
+          <button mat-stroked-button color="primary" type="button" (click)="refresh()" [disabled]="loading">
+            <mat-icon>refresh</mat-icon>
+            Actualizar
+          </button>
+        </div>
+
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Mapa + listado -->
+  <div class="flex gap-4 flex-col lg:flex-row">
+
+    <!-- Mapa -->
+    <mat-card class="cardWithShadow flex-1 mb-0! overflow-hidden">
+      <mat-card-content class="p-0! relative">
+
+        <!-- Leyenda -->
+        <div class="absolute z-10 top-4 left-4 bg-white/95 rounded-lg shadow-sm border border-border p-3 text-xs">
+          <div class="font-semibold mb-2">Convenciones</div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-success"></span>
+            En línea
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-gray-400"></span>
+            Sin conexión
+          </div>
+        </div>
+
+        <div
+          leaflet
+          class="tracking-map"
+          [leafletOptions]="mapOptions"
+          (leafletMapReady)="onMapReady($event)">
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Panel de funcionarios -->
+    <mat-card class="cardWithShadow w-full lg:w-96 mb-0!">
+      <mat-card-content class="flex flex-col gap-3">
+
+        <mat-card-title class="mb-0">Funcionarios ({{ total }})</mat-card-title>
+
+        <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+          <mat-icon matPrefix class="flex items-center">search</mat-icon>
+          <input matInput placeholder="Buscar funcionario..." [(ngModel)]="searchText" />
+        </mat-form-field>
+
+        <div class="tracking-list flex flex-col gap-1">
+
+          @if (loading) {
+            <div class="flex items-center justify-center py-10 text-muted">
+              <mat-spinner diameter="28"></mat-spinner>
+            </div>
+          } @else if (filteredOfficials.length === 0) {
+            <div class="flex flex-col items-center justify-center py-10 gap-2 text-gray-400">
+              <mat-icon style="font-size: 40px; width: 40px; height: 40px;">location_off</mat-icon>
+              <p class="text-sm">No hay funcionarios para mostrar.</p>
+            </div>
+          } @else {
+            @for (official of filteredOfficials; track official.id_official) {
+              <button type="button"
+                class="flex items-center gap-3 w-full text-left px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                (click)="focusOfficial(official)">
+
+                <span class="flex items-center justify-center size-9 rounded-full font-semibold text-xs text-white shrink-0"
+                  [ngClass]="official.gps_active ? 'bg-primary' : 'bg-gray-400'">
+                  {{ getInitials(official.name) }}
+                </span>
+
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold truncate">{{ official.name }}</div>
+                  <div class="flex items-center gap-1 text-xs"
+                    [ngClass]="official.gps_active ? 'text-success' : 'text-muted'">
+                    <span class="inline-block w-1.5 h-1.5 rounded-full"
+                      [ngClass]="official.gps_active ? 'bg-success' : 'bg-gray-400'"></span>
+                    {{ official.gps_active ? 'En línea' : 'Sin conexión' }}
+                  </div>
+                </div>
+
+                <div class="text-right shrink-0">
+                  <div class="text-xs text-muted">
+                    {{ official.last_gps_update ? (official.last_gps_update | date:'shortTime') : '—' }}
+                  </div>
+                  <div class="text-xs text-muted">{{ official.role }}</div>
+                </div>
+
+              </button>
+            }
+          }
+
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+</div>

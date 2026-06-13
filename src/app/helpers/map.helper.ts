@@ -5,7 +5,7 @@ import * as L from 'leaflet';
 export function buildOfficerIcon(officer: OfficerMarker): L.DivIcon {
   return L.divIcon({
     className:  '',
-    html:       officerIconHtml(getInitials(officer.name)),
+    html:       officerIconHtml(getInitials(officer.name), officer.status),
     iconSize:   [36, 36],
     iconAnchor: [18, 18],
   });

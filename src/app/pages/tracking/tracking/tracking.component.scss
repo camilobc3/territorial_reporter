@@ -1,0 +1,19 @@
+.tracking-map {
+  width: 100%;
+  height: 600px;
+}
+
+.tracking-list {
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+// Ajustes al popup de Leaflet renderizado fuera del árbol del componente
+:host ::ng-deep .leaflet-popup-content {
+  margin: 8px 10px;
+  font-size: 12px;
+}
+
+:host ::ng-deep .leaflet-popup-content strong {
+  font-size: 13px;
+}
