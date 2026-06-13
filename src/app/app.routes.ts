@@ -85,6 +85,13 @@ export const routes: Routes = [
             (m) => m.ReportsRoutes
           ),
       },
+      {
+        path: 'neighborhoods-map',
+        loadChildren: () =>
+          import('./pages/neighborhood-map/neighborhood-map.routes').then(
+            (m) => m.NeighborhoodsRoutes
+          ),
+      },
     ],
   },
   {

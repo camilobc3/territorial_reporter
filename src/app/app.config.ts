@@ -33,6 +33,8 @@ import { provideAuth, getAuth } from '@angular/fire/auth';
 import { environment } from 'src/environments/environments';
 // OAuth
 import { provideOAuthClient } from 'angular-oauth2-oidc';
+// APIs mapa
+import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -63,5 +65,6 @@ export const appConfig: ApplicationConfig = {
       prefix: './assets/i18n/',
       suffix: '.json'
     }),
+    importProvidersFrom(LeafletModule),
   ],
 };

@@ -1,0 +1,189 @@
+<div class="flex gap-4 h-full">
+
+    <!-- ── Columna izquierda: tabla de barrios ─────────────────────────────── -->
+    <div class="w-80 min-w-0 flex flex-col">
+
+        <!-- Selector de comuna -->
+        <mat-form-field appearance="outline" class="w-full mb-2" subscriptSizing="dynamic">
+            <mat-label>Comuna</mat-label>
+            <mat-select (selectionChange)="onCommuneChange($event.value)">
+            @if (loadingCommunes) {
+                <mat-option disabled>Cargando comunas...</mat-option>
+            } @else if (communes.length === 0) {
+                <mat-option disabled>No hay comunas registradas</mat-option>
+            } @else {
+                @for (commune of communes; track commune.id_commune) {
+                <mat-option [value]="commune.id_commune">{{ commune.name }}</mat-option>
+                }
+            }
+            </mat-select>
+        </mat-form-field>
+
+      <app-optimized-table
+        title="Barrios"
+        subtitle="Selecciona un barrio para demarcarlo."
+        searchPlaceholder="Buscar barrio..."
+        searchKey="name"
+        [columns]="columns"
+        [actions]="actions"
+        [data]="neighborhoods"
+        [loading]="loading"
+        (action)="onAction($event)">
+      </app-optimized-table>
+    </div>
+  
+    <!-- ── Columna central: mapa ──────────────────────────────────────────── -->
+    <div class="flex-1 min-w-0 flex flex-col gap-3">
+  
+      <!-- Aviso cuando no hay barrio seleccionado -->
+      @if (!selectedNeighborhood) {
+        <mat-card class="cardWithShadow flex-1">
+          <mat-card-content>
+            <div class="flex flex-col items-center justify-center h-full py-16 gap-3 text-gray-400">
+              <mat-icon style="font-size:48px;width:48px;height:48px;">map</mat-icon>
+              <p class="text-base font-medium">Selecciona un barrio</p>
+              <p class="text-sm">El mapa de demarcación aparecerá aquí.</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+  
+      <!-- Mapa activo -->
+      @if (selectedNeighborhood) {
+        <mat-card class="cardWithShadow">
+          <mat-card-content class="flex items-center gap-2 py-2">
+            <mat-icon class="text-primary">location_on</mat-icon>
+            <span class="font-semibold text-sm">{{ selectedNeighborhood.name }}</span>
+            @if (hasChanges) {
+              <span class="text-xs text-warning ml-2">● Cambios sin guardar</span>
+            }
+          </mat-card-content>
+        </mat-card>
+  
+        <div
+            leaflet
+            class="flex-1 rounded-lg overflow-hidden"
+            style="height: 520px;"
+            [leafletOptions]="mapOptions"
+            (leafletMapReady)="onMapReady($event)">
+        </div>
+      }
+  
+    </div>
+  
+    <!-- ── Columna derecha: herramientas + coordenadas ─────────────────────── -->
+    <div class="w-72 flex flex-col gap-4">
+  
+      <!-- Herramientas -->
+      <mat-card class="cardWithShadow">
+        <mat-card-header>
+          <mat-card-title class="text-sm font-semibold">Herramientas</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="flex flex-col gap-2 pt-2">
+          <p class="text-xs text-muted">
+            Usa los botones para dibujar o editar el polígono del barrio.
+          </p>
+          <mat-divider></mat-divider>
+      
+          <!-- Dibujar -->
+          <button mat-flat-button color="primary" class="w-full"
+            [disabled]="!selectedNeighborhood || drawMode === 'drawing'"
+            (click)="startDrawing()">
+            <mat-icon>edit</mat-icon>
+            {{ drawMode === 'drawing' ? 'Dibujando...' : 'Dibujar polígono' }}
+          </button>
+      
+          <!-- Cancelar dibujo -->
+          @if (drawMode === 'drawing') {
+            <button mat-stroked-button class="w-full" (click)="stopDrawing()">
+              <mat-icon>close</mat-icon>
+              Cancelar dibujo
+            </button>
+          }
+      
+          <!-- Editar -->
+          <button mat-stroked-button color="accent" class="w-full"
+            [disabled]="!selectedNeighborhood || coordinates.length === 0 || drawMode !== 'none'"
+            (click)="startEditing()">
+            <mat-icon>tune</mat-icon>
+            Editar polígono
+          </button>
+      
+          <mat-divider></mat-divider>
+      
+          <!-- Limpiar -->
+          <button mat-stroked-button color="warn" class="w-full"
+            [disabled]="!selectedNeighborhood || coordinates.length === 0"
+            (click)="clearMap()">
+            <mat-icon>layers_clear</mat-icon>
+            Limpiar polígono
+          </button>
+
+          @if (drawMode === 'editing') {
+            <button mat-flat-button color="primary" class="w-full" (click)="confirmEditing()">
+              <mat-icon>check</mat-icon>
+              Confirmar edición
+            </button>
+            <button mat-stroked-button class="w-full" (click)="stopDrawing()">
+              <mat-icon>close</mat-icon>
+              Cancelar edición
+            </button>
+          }
+      
+        </mat-card-content>
+      </mat-card>
+  
+      <!-- Coordenadas -->
+      <mat-card class="cardWithShadow flex-1">
+        <mat-card-header>
+          <mat-card-title class="text-sm font-semibold">Coordenadas</mat-card-title>
+          <mat-card-subtitle class="text-xs">
+            {{ coordinates.length ? coordinates.length + ' puntos' : 'Sin polígono' }}
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          @if (coordinates.length === 0) {
+            <div class="flex flex-col items-center justify-center py-8 gap-2 text-gray-400">
+              <mat-icon>polyline</mat-icon>
+              <p class="text-xs">Dibuja un polígono en el mapa</p>
+            </div>
+          } @else {
+            <div class="flex flex-col gap-1 max-h-64 overflow-y-auto">
+              @for (coord of coordinates; track $index) {
+                <div class="flex items-center gap-2 text-xs py-1 border-b border-gray-100">
+                  <span class="text-muted w-5">{{ $index + 1 }}</span>
+                  <span class="font-mono">{{ coord[1] | number:'1.5-5' }}</span>
+                  <span class="text-muted">,</span>
+                  <span class="font-mono">{{ coord[0] | number:'1.5-5' }}</span>
+                </div>
+              }
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+  
+      <!-- Acciones -->
+      <mat-card class="cardWithShadow">
+        <mat-card-content class="flex flex-col gap-2 pt-2">
+          <button mat-stroked-button class="w-full"
+            [disabled]="saving"
+            (click)="cancelChanges()">
+            <mat-icon>close</mat-icon>
+            Cancelar
+          </button>
+          <button mat-flat-button color="primary" class="w-full"
+            [disabled]="!hasChanges || saving || !selectedNeighborhood"
+            (click)="savePolygon()">
+            @if (saving) {
+              <mat-spinner diameter="18" class="inline-block mr-2"></mat-spinner>
+            } @else {
+              <mat-icon>save</mat-icon>
+            }
+            Guardar polígono
+          </button>
+        </mat-card-content>
+      </mat-card>
+  
+    </div>
+  
+  </div>

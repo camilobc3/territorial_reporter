@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { environment } from '../../environments/environments';
 import { Point } from '../models/point';
@@ -37,7 +37,9 @@ export class PointsService {
    */
   getByNeighborhood(idNeighborhood: number): Observable<Point[]> {
     const params = new HttpParams().set('id_neighborhood', String(idNeighborhood));
-    return this.http.get<Point[]>(this.apiUrl, { params });
+    return this.http.get<Point[]>(this.apiUrl, { params }).pipe(
+      map(points => points.filter(p => p.id_neighborhood === idNeighborhood))
+    );
   }
 
   /**
@@ -47,7 +49,9 @@ export class PointsService {
    */
   getByAnnotation(idAnnotation: number): Observable<Point[]> {
     const params = new HttpParams().set('id_annotation', String(idAnnotation));
-    return this.http.get<Point[]>(this.apiUrl, { params });
+    return this.http.get<Point[]>(this.apiUrl, { params }).pipe(
+      map(points => points.filter(p => p.id_annotation === idAnnotation))
+    );
   }
 
   /**

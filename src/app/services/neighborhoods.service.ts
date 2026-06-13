@@ -4,6 +4,8 @@ import { map, Observable } from 'rxjs';
 
 import { environment } from '../../environments/environments';
 import { Neighborhood } from '../models/neighborhood';
+import { GeoJsonFeature, GeoJsonPolygon } from '../types/map.types';
+import { NeighborhoodPolygon } from '../models/neighborhood-polygon';
 
 @Injectable({
   providedIn: 'root'
@@ -86,5 +88,13 @@ export class NeighborhoodsService {
    */
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+ * Guardar polígono de un barrio
+ * POST /neighborhoods/:id/polygon
+ */
+  savePolygon(id: number, geojson: GeoJsonFeature<GeoJsonPolygon>): Observable<NeighborhoodPolygon> {
+    return this.http.post<NeighborhoodPolygon>(`${this.apiUrl}/${id}/polygon`, { geojson });
   }
 }

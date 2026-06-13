@@ -2,6 +2,7 @@ export const environment = {
     production: false,
     apiUrl: 'http://127.0.0.1:5000',
     socketUrl: 'http://127.0.0.1:6001',
+    mapTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 
     firebase: {
         apiKey: 'AIzaSyDwyPV60KxE3joQteZl6U3_4B4s0M2NYT4',
