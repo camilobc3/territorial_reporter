@@ -1,0 +1,200 @@
+<!-- annotation-form.component.html -->
+<mat-card class="cardWithShadow mb-0! h-full">
+  <div class="flex flex-col h-full overflow-hidden">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
+      <div>
+        <h2 class="text-lg font-semibold m-0">Nueva anotación</h2>
+        <p class="text-xs text-muted mt-1">
+          Los campos con <span class="text-error">*</span> son obligatorios.
+        </p>
+      </div>
+      <button mat-icon-button type="button" (click)="onCancel()" [disabled]="saving">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 flex flex-col gap-6">
+
+        <!-- 1. Ubicación -->
+        <section>
+          <h3 class="text-sm font-semibold mb-3">1. Ubicación</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <mat-form-field appearance="outline" class="w-full" color="primary">
+              <mat-label>Latitud <span class="text-error">*</span></mat-label>
+              <input matInput type="number" formControlName="latitude" (change)="onLocationInput()" />
+              @if (f['latitude'].invalid && (f['latitude'].dirty || f['latitude'].touched || showErrors)) {
+                <mat-error>Requerida.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full" color="primary">
+              <mat-label>Longitud <span class="text-error">*</span></mat-label>
+              <input matInput type="number" formControlName="longitude" (change)="onLocationInput()" />
+              @if (f['longitude'].invalid && (f['longitude'].dirty || f['longitude'].touched || showErrors)) {
+                <mat-error>Requerida.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <p class="text-xs text-muted -mt-2">
+            Haz clic en el mapa para fijar la ubicación, o edítala manualmente.
+          </p>
+        </section>
+
+        <!-- 2. Descripción -->
+        <section>
+          <h3 class="text-sm font-semibold mb-3">2. Descripción <span class="text-error">*</span></h3>
+          <mat-form-field appearance="outline" class="w-full" color="primary">
+            <textarea matInput rows="4" formControlName="description" [maxlength]="maxDescription"
+              placeholder="Describe la situación o hallazgo..."></textarea>
+            @if (f['description'].hasError('required') && (f['description'].touched || showErrors)) {
+              <mat-error>La descripción es obligatoria.</mat-error>
+            }
+          </mat-form-field>
+          <div class="text-xs text-muted text-right -mt-3">
+            {{ f['description'].value?.length ?? 0 }}/{{ maxDescription }}
+          </div>
+        </section>
+
+        <!-- 3. Categorías -->
+        <section>
+          <h3 class="text-sm font-semibold mb-3">3. Categorías <span class="text-error">*</span></h3>
+
+          <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic" color="primary">
+            <mat-icon matPrefix class="flex items-center">search</mat-icon>
+            <input matInput placeholder="Buscar categorías..." [(ngModel)]="categorySearch"
+              [ngModelOptions]="{ standalone: true }" />
+          </mat-form-field>
+
+          @if (loading) {
+            <div class="flex justify-center py-6">
+              <mat-spinner diameter="28"></mat-spinner>
+            </div>
+          } @else if (filteredCategories.length === 0) {
+            <p class="text-sm text-muted py-3">No hay categorías disponibles.</p>
+          } @else {
+            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3">
+              @for (cat of filteredCategories; track cat.id_category) {
+                <button type="button"
+                  class="flex flex-col items-center gap-1 rounded-lg border p-2 text-xs transition-colors"
+                  [ngClass]="isCategorySelected(cat) ? 'border-primary bg-light-primary text-primary' : 'border-border hover:bg-gray-50'"
+                  (click)="toggleCategory(cat)">
+                  <mat-icon>{{ iconFor(cat) }}</mat-icon>
+                  <span class="text-center leading-tight">{{ cat.name }}</span>
+                </button>
+              }
+            </div>
+          }
+
+          @if (hasCategoryError) {
+            <p class="text-xs text-error mt-2">Selecciona al menos una categoría.</p>
+          }
+        </section>
+
+        <!-- 4. Fotografías -->
+        <section>
+          <h3 class="text-sm font-semibold mb-3">4. Fotografías (máx. {{ maxPhotos }})</h3>
+
+          <div
+            class="border-2 border-dashed rounded-lg p-5 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary transition-colors"
+            [class.border-primary]="isDragOver"
+            [class.border-border]="!isDragOver"
+            (click)="fileInput.click()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave()"
+            (drop)="onDrop($event)">
+            <mat-icon class="text-muted">cloud_upload</mat-icon>
+            <p class="text-xs text-center text-muted leading-relaxed">
+              Arrastra y suelta imágenes aquí<br />
+              <span class="underline">o haz clic para seleccionar</span>
+            </p>
+            <p class="text-xs text-muted">Formatos: JPG, PNG. Máx. 5MB por imagen.</p>
+            <input #fileInput type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden"
+              (change)="onFileSelected($event)" />
+          </div>
+
+          @if (photos.length > 0) {
+            <div class="grid grid-cols-4 sm:grid-cols-5 gap-2 mt-3">
+              @for (photo of photos; track photo.url; let i = $index) {
+                <div class="relative size-16 rounded-lg overflow-hidden border border-border">
+                  <img [src]="photo.url" class="w-full h-full object-cover" alt="Vista previa" />
+                  <button type="button"
+                    class="absolute top-0.5 right-0.5 bg-white/90 rounded-full size-5 flex items-center justify-center shadow-sm"
+                    (click)="removePhoto(i)" aria-label="Quitar foto">
+                    <mat-icon class="text-error" style="font-size:14px; width:14px; height:14px;">close</mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </section>
+
+        <!-- 5. Entidades de interés -->
+        <section>
+          <h3 class="text-sm font-semibold mb-3">5. Entidades de interés <span class="text-error">*</span></h3>
+          <p class="text-xs text-muted mb-2">
+            Selecciona las entidades a las que puede interesar esta anotación.
+          </p>
+
+          @if (selectedEntities.length > 0) {
+            <div class="flex flex-wrap gap-2 mb-2">
+              @for (entity of selectedEntities; track entity.id_entity) {
+                <span class="inline-flex items-center gap-1 rounded-full bg-light-primary text-primary text-xs font-medium pl-3 pr-1.5 py-1">
+                  {{ entity.name }}
+                  <button type="button" (click)="removeEntity(entity)" class="flex items-center" aria-label="Quitar entidad">
+                    <mat-icon style="font-size:14px; width:14px; height:14px;">close</mat-icon>
+                  </button>
+                </span>
+              }
+            </div>
+          }
+
+          <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic" color="primary">
+            <mat-icon matPrefix class="flex items-center">search</mat-icon>
+            <input matInput placeholder="Buscar entidades..." [(ngModel)]="entitySearch"
+              [ngModelOptions]="{ standalone: true }" />
+          </mat-form-field>
+
+          @if (loading) {
+            <div class="flex justify-center py-4">
+              <mat-spinner diameter="24"></mat-spinner>
+            </div>
+          } @else if (entitySearch && filteredEntities.length > 0) {
+            <div class="border border-border rounded-lg mt-2 max-h-40 overflow-y-auto">
+              @for (entity of filteredEntities; track entity.id_entity) {
+                <button type="button" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
+                  (click)="addEntity(entity)">
+                  {{ entity.name }}
+                </button>
+              }
+            </div>
+          } @else if (entitySearch && filteredEntities.length === 0) {
+            <p class="text-xs text-muted mt-2">No se encontraron entidades.</p>
+          }
+
+          @if (hasEntityError) {
+            <p class="text-xs text-error mt-2">Selecciona al menos una entidad interesada.</p>
+          }
+        </section>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="flex gap-3 px-6 py-4 border-t border-border shrink-0">
+      <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="saving" class="flex-1">
+        Cancelar
+      </button>
+      <button mat-flat-button color="primary" type="button" (click)="onSubmit()" [disabled]="saving" class="flex-1 flex items-center justify-center gap-2">
+        @if (saving) {
+          <mat-progress-spinner diameter="18" mode="indeterminate" color="accent"></mat-progress-spinner>
+        }
+        Guardar anotación
+      </button>
+    </div>
+
+  </div>
+</mat-card>

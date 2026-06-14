@@ -48,6 +48,11 @@ export const routes: Routes = [
           import('./pages/tracking/tracking.routes').then((m) => m.TrackingRoutes),
       },
       {
+        path: 'annotations',
+        loadChildren: () =>
+          import('./pages/annotations/annotations.routes').then((m) => m.AnnotationsRoutes),
+      },
+      {
         path: 'ui-components',
         loadChildren: () =>
           import('./pages/ui-components/ui-components.routes').then(
