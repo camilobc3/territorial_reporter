@@ -10,10 +10,12 @@
           <mat-card-subtitle>{{ subtitle }}</mat-card-subtitle>
         }
       </div>
-      <button mat-flat-button color="primary" (click)="create.emit()">
-        <mat-icon>add</mat-icon>
-        {{ createLabel }}
-      </button>
+      @if (showCreateButton) {
+        <button mat-flat-button color="primary" (click)="create.emit()">
+          <mat-icon>add</mat-icon>
+          {{ createLabel }}
+        </button>
+      }
     </div>
 
     <div class="mt-4 mb-4">
