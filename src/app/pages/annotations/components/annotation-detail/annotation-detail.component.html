@@ -1,0 +1,149 @@
+<!-- annotation-detail.component.html -->
+<mat-card class="cardWithShadow mb-0! h-full">
+  <div class="flex flex-col h-full overflow-hidden">
+
+    @if (!annotation) {
+      <div class="flex flex-col items-center justify-center h-full gap-3 text-gray-400 p-6">
+        <mat-icon style="font-size:48px;width:48px;height:48px;">touch_app</mat-icon>
+        <p class="text-base font-medium text-center">Selecciona una anotación en el mapa</p>
+        <p class="text-sm text-center">Haz clic en un punto para ver su detalle.</p>
+      </div>
+    } @else {
+
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-5 border-b border-border shrink-0">
+        <div>
+          <h2 class="text-lg font-semibold m-0">Detalle de la anotación</h2>
+          <span class="inline-flex items-center gap-1.5 text-xs font-medium mt-1 px-2 py-0.5 rounded-full"
+            [style.backgroundColor]="statusColor + '1A'" [style.color]="statusColor">
+            <span class="inline-block w-2 h-2 rounded-full" [style.backgroundColor]="statusColor"></span>
+            {{ statusLabel }}
+          </span>
+        </div>
+        <button mat-icon-button type="button" (click)="onClose()" aria-label="Cerrar detalle">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
+
+        @if (loading) {
+          <div class="flex justify-center py-10">
+            <mat-spinner diameter="32"></mat-spinner>
+          </div>
+        } @else {
+
+          <!-- Descripción -->
+          <section>
+            <h3 class="text-sm font-semibold mb-2">Descripción</h3>
+            <p class="text-sm text-muted whitespace-pre-line">{{ annotation.description }}</p>
+          </section>
+
+          <!-- Ubicación -->
+          <section>
+            <h3 class="text-sm font-semibold mb-2">Ubicación</h3>
+            <p class="text-sm text-muted">
+              Latitud: {{ annotation.latitude | number:'1.6-6' }}<br />
+              Longitud: {{ annotation.longitude | number:'1.6-6' }}
+            </p>
+          </section>
+
+          <!-- Categorías -->
+          <section>
+            <h3 class="text-sm font-semibold mb-2">Categorías</h3>
+            @if (categories.length === 0) {
+              <p class="text-sm text-muted">Sin categorías asociadas.</p>
+            } @else {
+              <div class="flex flex-wrap gap-2">
+                @for (cat of categories; track cat.id_category) {
+                  <span class="inline-flex items-center gap-1 rounded-full bg-light-primary text-primary text-xs font-medium px-3 py-1">
+                    <mat-icon style="font-size:14px; width:14px; height:14px;">{{ iconFor(cat) }}</mat-icon>
+                    {{ cat.name }}
+                  </span>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- Fotografías -->
+          <section>
+            <h3 class="text-sm font-semibold mb-2">Fotografías</h3>
+            @if (evidences.length === 0) {
+              <p class="text-sm text-muted">Sin fotografías adjuntas.</p>
+            } @else {
+              <div class="grid grid-cols-4 gap-2">
+                @for (ev of evidences; track ev.id_evidence) {
+                  <a [href]="imageUrl(ev)" target="_blank" rel="noopener"
+                    class="block size-16 rounded-lg overflow-hidden border border-border">
+                    <img [src]="imageUrl(ev)" class="w-full h-full object-cover" alt="Evidencia fotográfica" />
+                  </a>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- Entidades de interés -->
+          <section>
+            <h3 class="text-sm font-semibold mb-2">Entidades de interés</h3>
+            @if (entities.length === 0) {
+              <p class="text-sm text-muted">Sin entidades asociadas.</p>
+            } @else {
+              <div class="flex flex-wrap gap-2">
+                @for (entity of entities; track entity.id_entity) {
+                  <span class="inline-flex items-center rounded-full bg-light-secondary text-secondary text-xs font-medium px-3 py-1">
+                    {{ entity.name }}
+                  </span>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- Valoración ciudadana -->
+          <section>
+            <h3 class="text-sm font-semibold mb-2">Valoración ciudadana</h3>
+            @if (votes.length === 0) {
+              <p class="text-sm text-muted">Sin valoraciones registradas.</p>
+            } @else {
+              <div class="flex items-center gap-2 mb-3">
+                <mat-icon class="text-warning">star</mat-icon>
+                <span class="text-base font-semibold">{{ averageRating }}</span>
+                <span class="text-xs text-muted">
+                  ({{ votes.length }} {{ votes.length === 1 ? 'voto' : 'votos' }})
+                </span>
+              </div>
+
+              <div class="flex flex-col gap-2">
+                @for (vote of votes; track vote.id_vote) {
+                  @if (vote.comment) {
+                    <div class="text-sm bg-gray-50 rounded-lg p-2">
+                      <div class="flex items-center gap-0.5 mb-1">
+                        @for (i of stars; track i) {
+                          <mat-icon style="font-size:14px; width:14px; height:14px;"
+                            [class.text-warning]="i <= vote.stars"
+                            [class.text-gray-300]="i > vote.stars">
+                            star
+                          </mat-icon>
+                        }
+                      </div>
+                      <p class="text-muted">{{ vote.comment }}</p>
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </section>
+
+          <!-- Fecha de registro -->
+          @if (annotation.registration_date) {
+            <p class="text-xs text-muted">
+              Registrada el {{ annotation.registration_date | date:'medium' }}
+            </p>
+          }
+
+        }
+      </div>
+
+    }
+  </div>
+</mat-card>

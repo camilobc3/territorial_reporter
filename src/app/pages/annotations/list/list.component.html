@@ -1,0 +1,137 @@
+<!-- list.component.html -->
+<div class="flex flex-col gap-4">
+
+  <!-- Encabezado -->
+  <div>
+    <h2 class="text-2xl font-semibold m-0">Anotaciones</h2>
+    <p class="text-sm text-muted mt-1">
+      Consulta las anotaciones registradas en el territorio. Haz clic en un punto del mapa para ver su detalle.
+    </p>
+  </div>
+
+  <!-- Filtros -->
+  <mat-card class="cardWithShadow mb-0!">
+    <mat-card-content>
+      <div class="flex items-center gap-2 mb-3">
+        <mat-icon class="text-primary">filter_list</mat-icon>
+        <span class="font-semibold text-sm">Filtrar anotaciones</span>
+        <span class="text-xs text-muted ml-1">— Selecciona comuna, barrio y, opcionalmente, categoría</span>
+      </div>
+
+      <form [formGroup]="filterForm" class="flex flex-col sm:flex-row gap-4">
+
+        <!-- Comuna -->
+        <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
+          <mat-label>Comuna</mat-label>
+          <mat-select formControlName="commune" (selectionChange)="onCommuneChange($event.value)">
+            @if (loadingCommunes) {
+              <mat-option disabled>Cargando comunas...</mat-option>
+            } @else if (communes.length === 0) {
+              <mat-option disabled>No hay comunas registradas</mat-option>
+            } @else {
+              @for (commune of communes; track commune.id_commune) {
+                <mat-option [value]="commune.id_commune">{{ commune.name }}</mat-option>
+              }
+            }
+          </mat-select>
+          <mat-icon matSuffix class="text-gray-400">location_city</mat-icon>
+        </mat-form-field>
+
+        <!-- Barrio -->
+        <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
+          <mat-label>Barrio</mat-label>
+          <mat-select formControlName="neighborhood" (selectionChange)="onNeighborhoodChange($event.value)">
+            @if (loadingNeighborhoods) {
+              <mat-option disabled>Cargando barrios...</mat-option>
+            } @else if (neighborhoods.length === 0) {
+              <mat-option disabled>Selecciona una comuna primero</mat-option>
+            } @else {
+              @for (n of neighborhoods; track n.id_neighborhood) {
+                <mat-option [value]="n.id_neighborhood">{{ n.name }}</mat-option>
+              }
+            }
+          </mat-select>
+          <mat-icon matSuffix class="text-gray-400">holiday_village</mat-icon>
+        </mat-form-field>
+
+        <!-- Categoría -->
+        <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
+          <mat-label>Categoría</mat-label>
+          <mat-select formControlName="category" (selectionChange)="onCategoryFilterChange($event.value)">
+            <mat-option [value]="null">Todas las categorías</mat-option>
+            @for (cat of categories; track cat.id_category) {
+              <mat-option [value]="cat.id_category">{{ cat.name }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon matSuffix class="text-gray-400">category</mat-icon>
+        </mat-form-field>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Mapa + detalle -->
+  <div class="flex gap-4 flex-col lg:flex-row">
+
+    <!-- Mapa -->
+    <mat-card class="cardWithShadow flex-1 mb-0! overflow-hidden">
+      <mat-card-content class="p-0! relative">
+
+        <!-- Leyenda de estados -->
+        <div class="absolute z-10 top-4 left-4 bg-white/95 rounded-lg shadow-sm border border-border p-3 text-xs">
+          <div class="font-semibold mb-2">Estado</div>
+          @for (item of statusLegend; track item.status) {
+            <div class="flex items-center gap-2 mb-1">
+              <span class="inline-block w-2.5 h-2.5 rounded-full" [style.backgroundColor]="item.color"></span>
+              {{ item.label }}
+            </div>
+          }
+        </div>
+
+        <!-- Contador de resultados -->
+        @if (selectedNeighborhood) {
+          <div class="absolute z-10 top-4 right-4 bg-white/95 rounded-lg shadow-sm border border-border px-3 py-2 text-xs font-medium">
+            @if (loadingAnnotations) {
+              Cargando anotaciones...
+            } @else {
+              {{ annotations.length }} {{ annotations.length === 1 ? 'anotación' : 'anotaciones' }} en {{ selectedNeighborhood.name }}
+            }
+          </div>
+        }
+
+        <!-- Mensaje cuando aún no hay barrio seleccionado -->
+        @if (!selectedNeighborhood) {
+          <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400 bg-white/70 z-[5] pointer-events-none">
+            <mat-icon style="font-size:48px;width:48px;height:48px;">map</mat-icon>
+            <p class="text-base font-medium">Selecciona una comuna y un barrio</p>
+            <p class="text-sm">Las anotaciones registradas aparecerán como puntos en el mapa.</p>
+          </div>
+        }
+
+        <div
+          leaflet
+          class="w-full"
+          style="height: 600px;"
+          [leafletOptions]="mapOptions"
+          (leafletMapReady)="onMapReady($event)">
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Panel de detalle -->
+    <div class="w-full lg:w-[420px] shrink-0" style="height: 600px;">
+      <app-annotation-detail
+        [annotation]="selectedAnnotation"
+        [categories]="selectedCategories"
+        [entities]="selectedEntities"
+        [evidences]="selectedEvidences"
+        [votes]="selectedVotes"
+        [loading]="loadingDetail"
+        (closed)="closeDetail()">
+      </app-annotation-detail>
+    </div>
+
+  </div>
+
+</div>
