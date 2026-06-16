@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Official } from 'src/app/models/official';
 import { OfficialsService } from 'src/app/services/officials.service';
+import { EntitiesService } from 'src/app/services/entity.service';
 import { OptimizedTableComponent, OptimizedActionButton } from '../../../components/ui/optimized-table/optimized-table/optimized-table.component';
 import { OptimizedColumnDef } from '../../../components/ui/optimized-table/optimized-table/optimized-column-def';
 import Swal from 'sweetalert2';
@@ -23,12 +24,20 @@ export class ListComponent implements OnInit {
   total = 0;
   totalPages = 1;
   selectedEntityId: number | null = null;
+  selectedEntityName = '';
+
+  get tableTitle(): string {
+    return this.selectedEntityName
+      ? `Funcionarios registrados - ${this.selectedEntityName}`
+      : 'Funcionarios registrados';
+  }
 
   columns: OptimizedColumnDef[] = [
     { key: 'name',   header: 'Funcionario' },
     { key: 'role',   header: 'Cargo/Rol' },
     { key: 'email',  header: 'Correo', hideOnMobile: true },
     { key: 'phone',  header: 'Celular', hideOnMobile: true },
+    
     {
       key: 'status',
       header: 'Estado',
@@ -47,6 +56,7 @@ export class ListComponent implements OnInit {
 
   constructor(
     private officialsService: OfficialsService,
+    private entitiesService: EntitiesService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -62,8 +72,25 @@ export class ListComponent implements OnInit {
       const idEntityParam = params.get('id_entity');
       const idEntity = idEntityParam ? Number(idEntityParam) : NaN;
       this.selectedEntityId = Number.isNaN(idEntity) ? null : idEntity;
+      this.selectedEntityName = '';
       this.page = 1;
+
+      if (this.selectedEntityId !== null) {
+        this.loadSelectedEntityName(this.selectedEntityId);
+      }
+
       this.load();
+    });
+  }
+
+  private loadSelectedEntityName(idEntity: number): void {
+    this.entitiesService.getById(idEntity).subscribe({
+      next: (entity) => {
+        this.selectedEntityName = entity.name ?? '';
+      },
+      error: () => {
+        this.selectedEntityName = '';
+      },
     });
   }
 
