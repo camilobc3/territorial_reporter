@@ -14,6 +14,7 @@ import { SecurityService } from 'src/app/services/security.service';
     MaterialModule
   ],
   templateUrl: './side-login.component.html',
+  styleUrls: ['./side-login.component.scss']
 })
 export class AppSideLoginComponent {
 
