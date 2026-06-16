@@ -89,7 +89,7 @@
         <!-- Mensaje cuando aún no hay barrio seleccionado -->
         @if (!selectedNeighborhood) {
           <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400 bg-white/70 z-[5] pointer-events-none">
-            <mat-icon style="font-size:48px;width:48px;height:48px;">map</mat-icon>
+            <mat-icon class="!text-[48px] !w-12 !h-12">map</mat-icon>
             <p class="text-base font-medium">Selecciona una comuna y un barrio</p>
             <p class="text-sm">Luego haz clic en el mapa para fijar la ubicación de la anotación.</p>
           </div>
@@ -97,8 +97,7 @@
 
         <div
           leaflet
-          class="w-full"
-          style="height: 600px;"
+          class="w-full h-[600px]"
           [leafletOptions]="mapOptions"
           (leafletMapReady)="onMapReady($event)">
         </div>
@@ -107,8 +106,7 @@
     </mat-card>
 
     <!-- Formulario lateral -->
-     
-    <div class="w-full lg:w-[420px] shrink-0" style="height: 600px;">
+    <div class="w-full lg:w-[420px] shrink-0 h-[600px]">
       <app-annotation-form
         [latitude]="selectedLatitude"
         [longitude]="selectedLongitude"

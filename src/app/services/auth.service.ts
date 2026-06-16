@@ -3,6 +3,7 @@ import {
   Auth,
   GoogleAuthProvider,
   GithubAuthProvider,
+  TwitterAuthProvider,
   signInWithPopup,
   signOut,
   User,
@@ -76,6 +77,29 @@ export class AuthService {
     return firebaseUser;
   }
 
+  async loginWithTwitter(): Promise<User> {
+    const provider = new TwitterAuthProvider();
+
+    const result = await signInWithPopup(this.auth, provider);
+
+    const firebaseUser = result.user;
+
+    const token = await firebaseUser.getIdToken();
+
+    this.storageService.setItem(this.TOKEN_KEY, token);
+
+    const storedUser: FirebaseStoredUser = {
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      displayName: firebaseUser.displayName,
+      photoURL: firebaseUser.photoURL
+    };
+
+    this.storageService.setObject(this.USER_KEY, storedUser);
+    
+    return firebaseUser;
+  }
+
   async logout(): Promise<void> {
     this.storageService.removeItem(this.TOKEN_KEY);
     this.storageService.removeItem(this.USER_KEY);
@@ -89,6 +113,10 @@ export class AuthService {
 
   getUserFromLocalStorage(): FirebaseStoredUser | null {
     return this.storageService.getObject<FirebaseStoredUser>(this.USER_KEY);
+  }
+
+  hasStoredSession(): boolean {
+    return Boolean(this.storageService.getItem(this.TOKEN_KEY));
   }
 
   async getIdToken(): Promise<string | null> {

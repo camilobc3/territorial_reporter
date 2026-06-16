@@ -56,9 +56,7 @@ export class NeighborhoodMapComponent implements OnInit {
         if (!data) return;
         this.drawnItems.addLayer(data.polygon);
         this.polygonState.setPolygon(data.geojson, data.coordinates);
-        this.polygonState.markChanged(); // tiene polígono pero no hay cambios reales aún
-        // Corregir: cargar sin marcar como cambiado
-        this.polygonState['_hasChanges'].next(false);
+        this.polygonState.markSaved();
       },
       error: (err) => console.error('Error cargando polígono:', err)
     });
@@ -152,7 +150,7 @@ export class NeighborhoodMapComponent implements OnInit {
       .subscribe({
         next: () => {
           this.saving = false;
-          this.polygonState['_hasChanges'].next(false);
+          this.polygonState.markSaved();
           Swal.fire({
             icon:              'success',
             title:             'Polígono guardado',

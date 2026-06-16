@@ -39,7 +39,7 @@
           </div>
         } @else if (items.length === 0) {
           <div class="flex flex-col items-center justify-center py-10 text-gray-400 text-center">
-            <mat-icon style="font-size:48px;width:48px;height:48px;">star_border</mat-icon>
+            <mat-icon class="!text-[48px] !w-12 !h-12">star_border</mat-icon>
             <p class="font-medium">No tienes votaciones registradas</p>
           </div>
         } @else {
@@ -85,7 +85,7 @@
                 <div class="flex items-center gap-1 mt-2">
                   @for (star of [1, 2, 3, 4, 5]; track star) {
                     <mat-icon
-                      style="font-size:16px;width:16px;height:16px;"
+                      class="!text-base !w-4 !h-4"
                       [class.text-warning]="star <= item.vote.stars"
                       [class.text-gray-300]="star > item.vote.stars"
                     >

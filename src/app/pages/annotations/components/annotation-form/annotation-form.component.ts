@@ -5,18 +5,9 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { MaterialModule } from 'src/app/material.module';
 import { Category } from 'src/app/models/category';
 import { Entity } from 'src/app/models/entity';
+import { AnnotationFormPayload } from '../../types/annotation-form.types';
 import { getCategoryIcon } from '../../category-icon.util';
 import Swal from 'sweetalert2';
-
-/** Datos que el formulario emite al componente padre al guardar. */
-export interface AnnotationFormPayload {
-  description: string;
-  latitude: number;
-  longitude: number;
-  categoryIds: number[];
-  entityIds: number[];
-  photos: File[];
-}
 
 interface PhotoPreview {
   file: File;

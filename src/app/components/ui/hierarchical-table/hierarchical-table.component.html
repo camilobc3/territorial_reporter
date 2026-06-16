@@ -82,7 +82,7 @@
                 <div class="h-4 w-4 rounded bg-gray-200 animate-pulse mx-auto"></div>
               </td>
               <td *ngFor="let col of columns" class="px-4 py-3">
-                <div class="h-4 rounded bg-gray-200 animate-pulse" [style.width.%]="60 + (col.key.length * 3 % 30)"></div>
+                <div class="h-4 rounded bg-gray-200 animate-pulse" [ngClass]="skeletonWidthClass(col)"></div>
               </td>
               <td *ngIf="actions?.length" class="px-4 py-3">
                 <div class="h-6 w-16 rounded bg-gray-200 animate-pulse ml-auto"></div>
@@ -116,8 +116,7 @@
                 </button>
                 <span
                   *ngIf="node.children.length === 0"
-                  class="inline-block w-1.5 h-1.5 rounded-full bg-gray-300 mx-auto"
-                  style="margin-left: 9px">
+                  class="inline-block w-1.5 h-1.5 rounded-full bg-gray-300 mx-auto ml-[9px]">
                 </span>
               </td>
   
@@ -126,7 +125,7 @@
                 <td
                   *ngIf="!col.hideOnMobile"
                   class="px-4 py-3 align-middle"
-                  [style.padding-left.px]="col === columns[0] ? (16 + node.depth * 20) : null">
+                  [ngClass]="nodeIndentClass(node, col)">
   
                   <!-- Imagen -->
                   <ng-container *ngIf="col.type === 'image'">

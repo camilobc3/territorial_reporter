@@ -83,7 +83,7 @@
             <div class="flex items-center gap-2 mb-1">
               <span
                 class="inline-block w-2.5 h-2.5 rounded-full"
-                [style.backgroundColor]="item.color">
+                [ngClass]="statusLegendClass(item.status)">
               </span>
               {{ item.label }}
             </div>
@@ -106,7 +106,7 @@
         <!-- Mensaje cuando aún no hay barrio seleccionado -->
         @if (!selectedNeighborhood) {
           <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400 bg-white/70 z-[5] pointer-events-none">
-            <mat-icon style="font-size:48px;width:48px;height:48px;">map</mat-icon>
+            <mat-icon class="!text-[48px] !w-12 !h-12">map</mat-icon>
             <p class="text-base font-medium">Selecciona una comuna y un barrio</p>
             <p class="text-sm">Las anotaciones registradas aparecerán como puntos en el mapa.</p>
           </div>
@@ -114,8 +114,7 @@
 
         <div
           leaflet
-          class="w-full"
-          style="height: 600px;"
+          class="w-full h-[600px]"
           [leafletOptions]="mapOptions"
           (leafletMapReady)="onMapReady($event)">
         </div>
@@ -124,7 +123,7 @@
     </mat-card>
 
     <!-- Panel lateral de filtros -->
-    <div class="w-full xl:w-[320px] shrink-0" style="height: 600px;">
+    <div class="w-full xl:w-[320px] shrink-0 h-[600px]">
       <app-category-filter-panel
         [nodes]="categoryNodes"
         [selectedIds]="selectedCategoryIds"
@@ -135,7 +134,7 @@
     </div>
 
     <!-- Panel de detalle -->
-    <div class="w-full xl:w-[420px] shrink-0" style="height: 600px;">
+    <div class="w-full xl:w-[420px] shrink-0 h-[600px]">
       <app-annotation-detail
         [annotation]="selectedAnnotation"
         [categories]="selectedCategories"

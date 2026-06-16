@@ -2,24 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-
 import { MaterialModule } from 'src/app/material.module';
 
-import { Vote } from 'src/app/models/vote';
 import { Annotation } from 'src/app/models/annotation';
 
-import { VotesService } from 'src/app/services/votes.service';
-import { AnnotationsService } from 'src/app/services/annotations.service';
-import { CitizenContextService } from 'src/app/services/citizen-context.service';
-
 import { VoteMapComponent } from '../components/vote-map/vote-map.component';
-
-interface VoteWithAnnotation {
-  vote: Vote;
-  annotation: Annotation | null;
-}
+import { VoteFacadeService } from '../services/vote-facade.service';
+import { VoteWithAnnotation } from '../types/vote-view.types';
 
 @Component({
   selector: 'app-votes-list',
@@ -50,9 +39,7 @@ export class ListComponent implements OnInit {
   }
 
   constructor(
-    private votesService: VotesService,
-    private annotationsService: AnnotationsService,
-    private citizenContextService: CitizenContextService
+    private voteFacade: VoteFacadeService
   ) {}
 
   ngOnInit(): void {
@@ -63,7 +50,7 @@ export class ListComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    this.citizenContextService.getCurrentCitizenId().subscribe({
+    this.voteFacade.getCurrentCitizenId().subscribe({
       next: (idCitizen) => {
         this.currentCitizenId = idCitizen;
         this.loadVotes(idCitizen);
@@ -77,43 +64,11 @@ export class ListComponent implements OnInit {
   }
 
   private loadVotes(idCitizen: number): void {
-    this.votesService.getByCitizen(idCitizen).subscribe({
-      next: (votes) => {
-        const citizenVotes = votes.filter(vote => vote.id_citizen === idCitizen);
-
-        if (!citizenVotes.length) {
-          this.items = [];
-          this.selectedItem = null;
-          this.loading = false;
-          return;
-        }
-
-        const requests = citizenVotes.map((vote) =>
-          this.annotationsService.getById(vote.id_annotation).pipe(
-            map((annotation) => ({
-              vote,
-              annotation
-            })),
-            catchError(() =>
-              of({
-                vote,
-                annotation: null
-              })
-            )
-          )
-        );
-
-        forkJoin(requests).subscribe({
-          next: (items) => {
-            this.items = items;
-            this.selectedItem = items[0] ?? null;
-            this.loading = false;
-          },
-          error: () => {
-            this.items = [];
-            this.loading = false;
-          }
-        });
+    this.voteFacade.getCitizenVotesWithAnnotations(idCitizen).subscribe({
+      next: (items) => {
+        this.items = items;
+        this.selectedItem = items[0] ?? null;
+        this.loading = false;
       },
       error: () => {
         this.items = [];

@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { OAuthService, AuthConfig } from 'angular-oauth2-oidc';
 import { Router } from '@angular/router';
+import { environment } from 'src/environments/environments';
 
 const googleAuthConfig: AuthConfig = {
   issuer: 'https://accounts.google.com',
   strictDiscoveryDocumentValidation: false,
-  clientId: '780821760557-ufbmkdcoffc3vc0eo164k2trq3e4s30r.apps.googleusercontent.com',
-  redirectUri: 'http://localhost:4200',
+  clientId: environment.googleOAuthClientId,
+  redirectUri: window.location.origin,
   scope: 'openid profile email',
   responseType: 'token id_token',
   showDebugInformation: false,

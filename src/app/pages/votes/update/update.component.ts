@@ -2,21 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
-import { forkJoin } from 'rxjs';
-
 import { MaterialModule } from 'src/app/material.module';
 
 import { Vote } from 'src/app/models/vote';
 import { Annotation } from 'src/app/models/annotation';
 
-import { VotesService } from 'src/app/services/votes.service';
-import { AnnotationsService } from 'src/app/services/annotations.service';
-
-import {
-  VoteFormComponent,
-  VoteFormValue
-} from '../components/vote-form/vote-form.component';
+import { VoteFormComponent } from '../components/vote-form/vote-form.component';
 import { VoteMapComponent } from '../components/vote-map/vote-map.component';
+import { VoteFacadeService } from '../services/vote-facade.service';
+import { VoteFormValue } from '../types/vote-form.types';
 
 @Component({
   selector: 'app-update-vote',
@@ -44,8 +38,7 @@ export class UpdateComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private votesService: VotesService,
-    private annotationsService: AnnotationsService
+    private voteFacade: VoteFacadeService
   ) {}
 
   ngOnInit(): void {
@@ -62,26 +55,14 @@ export class UpdateComponent implements OnInit {
 
     this.loading = true;
 
-    this.votesService.getById(idVote).subscribe({
-      next: (vote) => {
+    this.voteFacade.getVoteWithAnnotation(idVote).subscribe({
+      next: ({ vote, annotation }) => {
         this.vote = vote;
-        this.loadAnnotation(vote.id_annotation);
-      },
-      error: () => {
-        this.error = 'No se pudo cargar la votación.';
-        this.loading = false;
-      }
-    });
-  }
-
-  private loadAnnotation(idAnnotation: number): void {
-    this.annotationsService.getById(idAnnotation).subscribe({
-      next: (annotation) => {
         this.annotation = annotation;
         this.loading = false;
       },
       error: () => {
-        this.annotation = null;
+        this.error = 'No se pudo cargar la votación.';
         this.loading = false;
       }
     });
@@ -94,13 +75,12 @@ export class UpdateComponent implements OnInit {
     this.error = '';
     this.message = '';
 
-    const updatedVote: Vote = {
-      ...this.vote,
-      stars: value.stars,
-      comment: value.comment
-    };
-
-    this.votesService.update(this.vote.id_vote, updatedVote).subscribe({
+    this.voteFacade.saveVote(
+      this.vote,
+      this.vote.id_citizen,
+      this.vote.id_annotation,
+      value,
+    ).subscribe({
       next: (vote) => {
         this.vote = vote;
         this.message = 'Calificación actualizada correctamente.';

@@ -20,14 +20,11 @@ import { NeighborhoodsService } from 'src/app/services/neighborhoods.service';
 import { CategoriesService } from 'src/app/services/categories.service';
 import { AnnotationsService } from 'src/app/services/annotations.service';
 import { AnnotationCategoriesService } from 'src/app/services/annotation-categories.service';
-import { VotesService } from 'src/app/services/votes.service';
-import { CitizenContextService } from 'src/app/services/citizen-context.service';
+import { VoteFacadeService } from '../services/vote-facade.service';
 
-import {
-  VoteFormComponent,
-  VoteFormValue
-} from '../components/vote-form/vote-form.component';
+import { VoteFormComponent } from '../components/vote-form/vote-form.component';
 import { VoteMapComponent } from '../components/vote-map/vote-map.component';
+import { VoteFormValue } from '../types/vote-form.types';
 
 @Component({
   selector: 'app-create-vote',
@@ -76,8 +73,7 @@ export class CreateComponent implements OnInit {
     private categoriesService: CategoriesService,
     private annotationsService: AnnotationsService,
     private annotationCategoriesService: AnnotationCategoriesService,
-    private votesService: VotesService,
-    private citizenContextService: CitizenContextService
+    private voteFacade: VoteFacadeService
   ) {}
 
   ngOnInit(): void {
@@ -95,7 +91,7 @@ export class CreateComponent implements OnInit {
   private loadCurrentCitizen(): void {
     this.loadingCitizen = true;
 
-    this.citizenContextService.getCurrentCitizenId().subscribe({
+    this.voteFacade.getCurrentCitizenId().subscribe({
       next: (idCitizen) => {
         this.currentCitizenId = idCitizen;
         this.loadingCitizen = false;
@@ -242,22 +238,16 @@ export class CreateComponent implements OnInit {
 
     this.loadingVote = true;
 
-    this.votesService
-      .getByCitizenAndAnnotation(this.currentCitizenId, annotation.id_annotation)
-      .subscribe({
-        next: (resp) => {
-          this.existingVote = this.toArray<Vote>(resp).find(
-            vote =>
-              vote.id_citizen === this.currentCitizenId &&
-              vote.id_annotation === annotation.id_annotation
-          ) ?? null;
-          this.loadingVote = false;
-        },
-        error: () => {
-          this.existingVote = null;
-          this.loadingVote = false;
-        }
-      });
+    this.voteFacade.findExistingVote(this.currentCitizenId, annotation.id_annotation).subscribe({
+      next: (vote) => {
+        this.existingVote = vote;
+        this.loadingVote = false;
+      },
+      error: () => {
+        this.existingVote = null;
+        this.loadingVote = false;
+      }
+    });
   }
 
   saveVote(value: VoteFormValue): void {
@@ -275,18 +265,12 @@ export class CreateComponent implements OnInit {
     this.message = '';
     this.error = '';
 
-    const voteData: Omit<Vote, 'id_vote'> = {
-      id_citizen: this.currentCitizenId,
-      id_annotation: this.selectedAnnotation.id_annotation,
-      stars: value.stars,
-      comment: value.comment
-    };
-
-    const request$ = this.existingVote?.id_vote
-      ? this.votesService.update(this.existingVote.id_vote, voteData)
-      : this.votesService.create(voteData);
-
-    request$.subscribe({
+    this.voteFacade.saveVote(
+      this.existingVote,
+      this.currentCitizenId,
+      this.selectedAnnotation.id_annotation,
+      value,
+    ).subscribe({
       next: (vote) => {
         this.existingVote = vote;
         this.message = 'Calificación guardada correctamente.';

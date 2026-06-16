@@ -126,7 +126,20 @@ export class HierarchicalTableComponent<T extends Record<string, any>>
   }
 
   protected onImgError(event: Event): void {
-    (event.target as HTMLImageElement).style.display = 'none';
+    (event.target as HTMLImageElement).classList.add('hidden');
+  }
+
+  protected skeletonWidthClass(col: HierarchicalColumnDef): string {
+    const widths = ['w-3/5', 'w-2/3', 'w-3/4', 'w-4/5'];
+    return widths[col.key.length % widths.length];
+  }
+
+  protected nodeIndentClass(node: TreeNode<T>, col: HierarchicalColumnDef): string {
+    if (col !== this.columns[0]) return '';
+    if (node.depth <= 0) return 'pl-4';
+    if (node.depth === 1) return 'pl-9';
+    if (node.depth === 2) return 'pl-14';
+    return 'pl-[76px]';
   }
 
   protected trackByNode(_: number, node: TreeNode<T>): any {

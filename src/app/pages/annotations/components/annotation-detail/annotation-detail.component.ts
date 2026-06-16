@@ -11,7 +11,7 @@ import { Evidence } from 'src/app/models/evidence';
 import { Vote } from 'src/app/models/vote';
 
 import { getCategoryIcon } from '../../category-icon.util';
-import { getStatusColor, getStatusLabel } from '../../list/annotation-marker.util';
+import { getStatusBadgeClass, getStatusDotClass, getStatusLabel } from 'src/app/helpers/annotation-marker.helper';
 
 @Component({
   selector: 'app-annotation-detail',
@@ -44,8 +44,12 @@ export class AnnotationDetailComponent {
     return getStatusLabel(this.annotation?.status);
   }
 
-  get statusColor(): string {
-    return getStatusColor(this.annotation?.status);
+  get statusBadgeClass(): string {
+    return getStatusBadgeClass(this.annotation?.status);
+  }
+
+  get statusDotClass(): string {
+    return getStatusDotClass(this.annotation?.status);
   }
 
   get averageRating(): number | null {

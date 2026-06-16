@@ -32,12 +32,10 @@ import { LeafletMapService } from 'src/app/services/api/leaflet/leaflet-map.serv
 import { PolygonPersistenceService } from 'src/app/services/api/leaflet/polygon-persistence.service';
 
 import { AnnotationDetailComponent } from '../components/annotation-detail/annotation-detail.component';
-import {
-  CategoryFilterNode,
-  CategoryFilterPanelComponent
-} from '../components/category-filter-panel/category-filter-panel.component';
+import { CategoryFilterPanelComponent } from '../components/category-filter-panel/category-filter-panel.component';
+import { CategoryFilterNode } from '../types/category-filter.types';
 
-import { ANNOTATION_STATUS_LEGEND, buildAnnotationIcon } from './annotation-marker.util';
+import { ANNOTATION_STATUS_LEGEND, buildAnnotationIcon, getStatusDotClass } from 'src/app/helpers/annotation-marker.helper';
 
 const MANIZALES_CENTER = {
   centerLat: 5.0703,
@@ -387,6 +385,10 @@ export class ListComponent implements OnInit {
       marker.on('click', () => this.selectAnnotation(annotation));
       this.markersLayer.addLayer(marker);
     });
+  }
+
+  statusLegendClass(status: string): string {
+    return getStatusDotClass(status);
   }
 
   // ── Detalle de anotación ───────────────────────────────────────────────

@@ -15,17 +15,7 @@ import { OfficialsService } from 'src/app/services/officials.service';
 import { EntitiesService } from 'src/app/services/entity.service';
 import { NotificationService } from 'src/app/services/notification.service';
 import { LeafletMapService } from 'src/app/services/api/leaflet/leaflet-map.service';
-
-interface OfficialTrackingUpdate {
-  id_official: number;
-  latitude: number;
-  longitude: number;
-  last_gps_update: string;
-}
-
-interface OfficialTrackingPayload {
-  officials: OfficialTrackingUpdate[];
-}
+import { OfficialTrackingPayload } from '../tracking.types';
 
 // Coordenadas aproximadas del centro de Manizales
 const MANIZALES_CENTER = { centerLat: 5.0703, centerLng: -75.5138, zoom: 13 };

@@ -35,6 +35,10 @@ export class PolygonStateService {
     this._hasChanges.next(true);
   }
 
+  markSaved(): void {
+    this._hasChanges.next(false);
+  }
+
   reset(): void {
     this._currentGeoJson.next(null);
     this._coordinates.next([]);
