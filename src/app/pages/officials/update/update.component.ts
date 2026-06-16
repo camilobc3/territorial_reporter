@@ -37,9 +37,17 @@ export class UpdateComponent implements OnInit {
   }
 
   onUpdate(formValue: Partial<Official>): void {
-    const payload: Official = { id_official: this.id, ...(formValue as Official) };
+    const payload: Official = { 
+      id_official: this.id, 
+      ...(formValue as Official) 
+    };
+    
     this.officialsService.update(this.id, payload).subscribe(() => {
-      this.router.navigate(['/officials/list']);
+      this.router.navigate(['/officials/list'], {
+        queryParams: payload.id_entity 
+          ? { id_entity: payload.id_entity } 
+          : undefined
+      });
     });
   }
 
