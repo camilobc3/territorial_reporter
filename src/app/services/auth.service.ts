@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {
   Auth,
   GoogleAuthProvider,
+  GithubAuthProvider,
   signInWithPopup,
   signOut,
   User,
@@ -31,6 +32,29 @@ export class AuthService {
 
   async loginWithGoogle(): Promise<User> {
     const provider = new GoogleAuthProvider();
+
+    const result = await signInWithPopup(this.auth, provider);
+
+    const firebaseUser = result.user;
+
+    const token = await firebaseUser.getIdToken();
+
+    this.storageService.setItem(this.TOKEN_KEY, token);
+
+    const storedUser: FirebaseStoredUser = {
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      displayName: firebaseUser.displayName,
+      photoURL: firebaseUser.photoURL
+    };
+
+    this.storageService.setObject(this.USER_KEY, storedUser);
+
+    return firebaseUser;
+  }
+
+  async loginWithGithub(): Promise<User> {
+    const provider = new GithubAuthProvider();
 
     const result = await signInWithPopup(this.auth, provider);
 
