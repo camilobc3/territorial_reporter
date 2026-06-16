@@ -31,13 +31,15 @@ export class CreateComponent implements OnInit {
 
   onCreate(formValue: Partial<Official>): void {
     const payload: Omit<Official, 'id_official'> = {
-      id_entity: this.idEntity,
-      name: formValue.name ?? '',
-      email: formValue.email ?? '',
-      phone: formValue.phone ?? null,
-      role: formValue.role ?? '',
-      status: formValue.status ?? 'active',
-      gps_active: false,
+      id_entity:      this.idEntity,
+      name:           formValue.name           ?? '',
+      email:          formValue.email          ?? '',
+      phone:          formValue.phone          ?? null,
+      role:           formValue.role           ?? '',
+      status:         formValue.status         ?? 'active',
+      gps_active:     formValue.gps_active     ?? true,       // ← antes era false
+      last_latitude:  formValue.last_latitude  ?? 5.0703,     // ← antes era undefined
+      last_longitude: formValue.last_longitude ?? -75.5138,   // ← antes era undefined
     };
 
     this.officialsService.create(payload).subscribe(() => {

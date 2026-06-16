@@ -12,4 +12,4 @@ export interface OfficerMarker {
     lng:        number;
     status:     OfficerOnlineStatus;                      // 'online' | 'offline'
     updated_at: string;                                   // ISO timestamp
-  }
+}
