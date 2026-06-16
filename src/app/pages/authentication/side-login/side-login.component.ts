@@ -14,10 +14,12 @@ import { SecurityService } from 'src/app/services/security.service';
     MaterialModule
   ],
   templateUrl: './side-login.component.html',
+  styleUrls: ['./side-login.component.scss']
 })
 export class AppSideLoginComponent {
 
   loadingGoogle = false;
+  loadingGithub = false;
   errorMessage = '';
 
   constructor(
@@ -50,6 +52,33 @@ export class AppSideLoginComponent {
       this.errorMessage = 'No se pudo iniciar sesión con Google.';
     } finally {
       this.loadingGoogle = false;
+    }
+  }
+
+  async loginWithGithub(): Promise<void> {
+    try {
+      this.loadingGithub = true;
+      this.errorMessage = '';
+
+      const firebaseUser = await this.authService.loginWithGithub();
+
+      const storedUser = this.authService.getUserFromLocalStorage();
+
+      if (storedUser) {
+        this.securityService.setUserFromFirebase(storedUser);
+      } else {
+        this.securityService.setUser({
+          name: firebaseUser.displayName || firebaseUser.email || 'Usuario',
+          email: firebaseUser.email || ''
+        });
+      }
+
+      this.router.navigate(['/dashboard']);
+    } catch (error) {
+      console.error('Error iniciando sesión con GitHub:', error);
+      this.errorMessage = 'No se pudo iniciar sesión con GitHub.';
+    } finally {
+      this.loadingGithub = false;
     }
   }
 }
