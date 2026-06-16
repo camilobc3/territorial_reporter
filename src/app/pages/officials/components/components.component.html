@@ -106,12 +106,13 @@
 
       <div class="mt-3 flex gap-2">
         <button mat-flat-button color="primary" type="submit"
-          [disabled]="form.invalid"
+          [disabled]="form.invalid || isSubmitting"
           class="w-36 flex justify-center items-center">
-          {{ isEditMode ? 'Actualizar' : 'Crear' }}
+          {{ isSubmitting ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Crear') }}
         </button>
         <button mat-flat-button color="warn" type="button"
           (click)="onCancel()"
+          [disabled]="isSubmitting"
           class="w-36 flex justify-center items-center">
           Cancelar
         </button>

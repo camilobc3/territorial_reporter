@@ -25,6 +25,7 @@ import { Official } from 'src/app/models/official';
 })
 export class ComponentsComponent implements OnInit, OnChanges {
   @Input() official?: Official;
+  @Input() isSubmitting = false;
   @Output() formSubmit = new EventEmitter<Partial<Official>>();
   @Output() cancel = new EventEmitter<void>();
 
@@ -46,20 +47,31 @@ export class ComponentsComponent implements OnInit, OnChanges {
     }
   }
 
-  // En buildForm(), reemplaza el form actual con:
   private buildForm(): void {
-      this.isEditMode = !!this.official;
+    this.isEditMode = !!this.official;
 
-      this.form = this.fb.group({
-        name:           [this.official?.name           ?? '', Validators.required],
-        email:          [this.official?.email          ?? '', [Validators.required, Validators.email]],
-        phone:          [this.official?.phone          ?? '', [Validators.pattern(/^[0-9+\-\s()]{7,20}$/)]],
-        role:           [this.official?.role           ?? '', Validators.required],
-        status:         [this.official?.status         ?? 'active', Validators.required],
-        gps_active:     [this.official?.gps_active     ?? true],
-        last_latitude:  [this.official?.last_latitude  ?? 5.0703,  [Validators.min(-90),  Validators.max(90)]],
-        last_longitude: [this.official?.last_longitude ?? -75.5138, [Validators.min(-180), Validators.max(180)]],
-      });
+    const phoneValidators = this.official?.phone 
+      ? [Validators.pattern(/^[0-9+\-\s()]{7,20}$/)]
+      : [];
+    
+    const latValidators = this.official?.last_latitude != null
+      ? [Validators.min(-90), Validators.max(90)]
+      : [];
+    
+    const longValidators = this.official?.last_longitude != null
+      ? [Validators.min(-180), Validators.max(180)]
+      : [];
+
+    this.form = this.fb.group({
+      name:           [this.official?.name           ?? '', Validators.required],
+      email:          [this.official?.email          ?? '', [Validators.required, Validators.email]],
+      phone:          [this.official?.phone          ?? ''],
+      role:           [this.official?.role           ?? '', Validators.required],
+      status:         [this.official?.status         ?? 'active', Validators.required],
+      gps_active:     [this.official?.gps_active     ?? true],
+      last_latitude:  [this.official?.last_latitude  ?? null, latValidators],
+      last_longitude: [this.official?.last_longitude ?? null, longValidators],
+    });
   }
 
   onSubmit(): void {
