@@ -3,6 +3,7 @@ import {
   Auth,
   GoogleAuthProvider,
   GithubAuthProvider,
+  TwitterAuthProvider,
   signInWithPopup,
   signOut,
   User,
@@ -73,6 +74,29 @@ export class AuthService {
 
     this.storageService.setObject(this.USER_KEY, storedUser);
 
+    return firebaseUser;
+  }
+
+  async loginWithTwitter(): Promise<User> {
+    const provider = new TwitterAuthProvider();
+
+    const result = await signInWithPopup(this.auth, provider);
+
+    const firebaseUser = result.user;
+
+    const token = await firebaseUser.getIdToken();
+
+    this.storageService.setItem(this.TOKEN_KEY, token);
+
+    const storedUser: FirebaseStoredUser = {
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      displayName: firebaseUser.displayName,
+      photoURL: firebaseUser.photoURL
+    };
+
+    this.storageService.setObject(this.USER_KEY, storedUser);
+    
     return firebaseUser;
   }
 

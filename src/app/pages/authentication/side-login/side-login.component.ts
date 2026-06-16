@@ -20,6 +20,7 @@ export class AppSideLoginComponent {
 
   loadingGoogle = false;
   loadingGithub = false;
+  loadingTwitter = false;
   errorMessage = '';
 
   constructor(
@@ -79,6 +80,33 @@ export class AppSideLoginComponent {
       this.errorMessage = 'No se pudo iniciar sesión con GitHub.';
     } finally {
       this.loadingGithub = false;
+    }
+  }
+
+  async loginWithTwitter(): Promise<void> {
+    try {
+      this.loadingTwitter = true;
+      this.errorMessage = '';
+  
+      const firebaseUser = await this.authService.loginWithTwitter();
+  
+      const storedUser = this.authService.getUserFromLocalStorage();
+  
+      if (storedUser) {
+        this.securityService.setUserFromFirebase(storedUser);
+      } else {
+        this.securityService.setUser({
+          name: firebaseUser.displayName || firebaseUser.email || 'Usuario',
+          email: firebaseUser.email || ''
+        });
+      }
+  
+      this.router.navigate(['/dashboard']);
+    } catch (error) {
+      console.error('Error iniciando sesión con Twitter:', error);
+      this.errorMessage = 'No se pudo iniciar sesión con Twitter.';
+    } finally {
+      this.loadingTwitter = false;
     }
   }
 }
