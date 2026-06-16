@@ -1,1 +1,102 @@
 <p>update works!</p>
+<div class="flex flex-col gap-4">
+
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-semibold m-0">Editar calificación</h2>
+      <p class="text-sm text-muted mt-1">
+        Actualiza las estrellas y el comentario de tu votación.
+      </p>
+    </div>
+
+    <button mat-stroked-button type="button" (click)="goBack()">
+      Volver
+    </button>
+  </div>
+
+  @if (loading) {
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <div class="flex justify-center py-8">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  } @else if (error && !vote) {
+    <div class="rounded-lg bg-light-error text-error p-3 text-sm">
+      {{ error }}
+    </div>
+  } @else if (vote) {
+
+    <div class="grid grid-cols-12 gap-4">
+
+      <mat-card class="cardWithShadow col-span-12 lg:col-span-7 mb-0! overflow-hidden">
+        <mat-card-content class="p-0!">
+
+          @if (annotation) {
+            <app-vote-map
+              [annotations]="[annotation]"
+              [idNeighborhood]="annotation.id_neighborhood ?? null"
+              [selectedAnnotationId]="annotation.id_annotation ?? null"
+              height="520px">
+            </app-vote-map>
+          } @else {
+            <div class="flex flex-col items-center justify-center h-[520px] gap-3 text-gray-400 text-center">
+              <mat-icon style="font-size:48px;width:48px;height:48px;">map</mat-icon>
+              <p>No se pudo cargar la anotación asociada.</p>
+            </div>
+          }
+
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="cardWithShadow col-span-12 lg:col-span-5 mb-0!">
+        <mat-card-content>
+
+          <div class="flex flex-col gap-4">
+
+            <div>
+              <h3 class="text-lg font-semibold m-0">
+                Votación #{{ vote.id_vote }}
+              </h3>
+              <p class="text-sm text-muted mt-1">
+                Anotación #{{ vote.id_annotation }}
+              </p>
+            </div>
+
+            @if (annotation) {
+              <section>
+                <h4 class="text-sm font-semibold mb-1">Descripción de la anotación</h4>
+                <p class="text-sm text-muted whitespace-pre-line">
+                  {{ annotation.description }}
+                </p>
+              </section>
+            }
+
+            <app-vote-form
+              [vote]="vote"
+              [saving]="saving"
+              (voteSubmitted)="updateVote($event)">
+            </app-vote-form>
+
+            @if (message) {
+              <div class="rounded-lg bg-light-success text-success p-3 text-sm">
+                {{ message }}
+              </div>
+            }
+
+            @if (error) {
+              <div class="rounded-lg bg-light-error text-error p-3 text-sm">
+                {{ error }}
+              </div>
+            }
+
+          </div>
+
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+  }
+
+</div>

@@ -1,0 +1,39 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.filter-panel {
+  box-shadow: none !important;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px !important;
+  margin-bottom: 10px;
+}
+
+.count-badge {
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.count-badge.small {
+  background: #f3f4f6;
+  color: #475569;
+}
+
+.child-row {
+  padding: 4px 0;
+}
+
+.summary-box {
+  border-radius: 12px;
+  background: #eff6ff;
+  padding: 12px;
+}

@@ -1,0 +1,126 @@
+<!-- create.component.html -->
+<div class="flex flex-col gap-4">
+
+  <!-- Encabezado -->
+  <div>
+    <h2 class="text-2xl font-semibold m-0">Crear anotación</h2>
+    <p class="text-sm text-muted mt-1">
+      Haz clic en el mapa para agregar una anotación en el territorio.
+    </p>
+  </div>
+
+  <!-- Filtros -->
+  <mat-card class="cardWithShadow mb-0!">
+    <mat-card-content>
+      <div class="flex items-center gap-2 mb-3">
+        <mat-icon class="text-primary">filter_list</mat-icon>
+        <span class="font-semibold text-sm">Ubicación de la anotación</span>
+        <span class="text-xs text-muted ml-1">— Selecciona la comuna y el barrio donde se ubicará</span>
+      </div>
+
+      <form [formGroup]="filterForm" class="flex flex-col sm:flex-row gap-4">
+
+        <!-- Comuna -->
+        <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
+          <mat-label>Comuna</mat-label>
+          <mat-select formControlName="commune" (selectionChange)="onCommuneChange($event.value)">
+            @if (loadingCommunes) {
+              <mat-option disabled>Cargando comunas...</mat-option>
+            } @else if (communes.length === 0) {
+              <mat-option disabled>No hay comunas registradas</mat-option>
+            } @else {
+              @for (commune of communes; track commune.id_commune) {
+                <mat-option [value]="commune.id_commune">{{ commune.name }}</mat-option>
+              }
+            }
+          </mat-select>
+          <mat-icon matSuffix class="text-gray-400">location_city</mat-icon>
+        </mat-form-field>
+
+        <!-- Barrio -->
+        <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
+          <mat-label>Barrio</mat-label>
+          <mat-select formControlName="neighborhood" (selectionChange)="onNeighborhoodChange($event.value)">
+            @if (loadingNeighborhoods) {
+              <mat-option disabled>Cargando barrios...</mat-option>
+            } @else if (neighborhoods.length === 0) {
+              <mat-option disabled>Selecciona una comuna primero</mat-option>
+            } @else {
+              @for (n of neighborhoods; track n.id_neighborhood) {
+                <mat-option [value]="n.id_neighborhood">{{ n.name }}</mat-option>
+              }
+            }
+          </mat-select>
+          <mat-icon matSuffix class="text-gray-400">holiday_village</mat-icon>
+        </mat-form-field>
+
+        <!-- Categoría (filtro / preselección rápida) -->
+        <mat-form-field appearance="outline" class="flex-1" color="primary" subscriptSizing="dynamic">
+          <mat-label>Categoría</mat-label>
+          <mat-select formControlName="category" (selectionChange)="onCategoryFilterChange($event.value)">
+            <mat-option [value]="null">Todas las categorías</mat-option>
+            @for (cat of categories; track cat.id_category) {
+              <mat-option [value]="cat.id_category">{{ cat.name }}</mat-option>
+            }
+          </mat-select>
+          <mat-icon matSuffix class="text-gray-400">category</mat-icon>
+        </mat-form-field>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Mapa + formulario -->
+  <div class="flex gap-4 flex-col lg:flex-row">
+
+    <!-- Mapa -->
+    <mat-card class="cardWithShadow flex-1 mb-0! overflow-hidden">
+      <mat-card-content class="p-0! relative">
+
+        <!-- Coordenadas seleccionadas -->
+        @if (selectedLatitude != null && selectedLongitude != null) {
+          <div class="absolute z-10 top-4 left-4 bg-white/95 rounded-lg shadow-sm border border-border p-3 text-xs">
+            <div class="font-semibold mb-1">Coordenadas seleccionadas</div>
+            <div>Latitud: {{ selectedLatitude | number:'1.6-6' }}</div>
+            <div>Longitud: {{ selectedLongitude | number:'1.6-6' }}</div>
+          </div>
+        }
+
+        <!-- Mensaje cuando aún no hay barrio seleccionado -->
+        @if (!selectedNeighborhood) {
+          <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400 bg-white/70 z-[5] pointer-events-none">
+            <mat-icon style="font-size:48px;width:48px;height:48px;">map</mat-icon>
+            <p class="text-base font-medium">Selecciona una comuna y un barrio</p>
+            <p class="text-sm">Luego haz clic en el mapa para fijar la ubicación de la anotación.</p>
+          </div>
+        }
+
+        <div
+          leaflet
+          class="w-full"
+          style="height: 600px;"
+          [leafletOptions]="mapOptions"
+          (leafletMapReady)="onMapReady($event)">
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Formulario lateral -->
+    <div class="w-full lg:w-[420px] shrink-0" style="height: 600px;">
+      <app-annotation-form
+        [latitude]="selectedLatitude"
+        [longitude]="selectedLongitude"
+        [categories]="categories"
+        [entities]="entities"
+        [loading]="loadingCatalogs"
+        [saving]="saving"
+        (formSubmit)="onFormSubmit($event)"
+        (cancelled)="onCancel()"
+        (locationChange)="onLocationChange($event)">
+      </app-annotation-form>
+    </div>
+
+  </div>
+
+</div>

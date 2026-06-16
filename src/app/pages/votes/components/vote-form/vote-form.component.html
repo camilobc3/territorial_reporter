@@ -1,0 +1,56 @@
+<form [formGroup]="form" class="flex flex-col gap-4" (ngSubmit)="submit()">
+
+  <div>
+    <p class="text-sm font-semibold mb-2">Calificación</p>
+
+    <div class="flex items-center gap-1">
+      @for (star of stars; track star) {
+        <button
+          mat-icon-button
+          type="button"
+          color="primary"
+          (click)="setStars(star)"
+          [disabled]="saving"
+          [attr.aria-label]="'Calificar con ' + star + ' estrellas'"
+        >
+          <mat-icon
+            [class.text-warning]="star <= (form.value.stars ?? 0)"
+            [class.text-gray-300]="star > (form.value.stars ?? 0)"
+          >
+            star
+          </mat-icon>
+        </button>
+      }
+    </div>
+
+    @if (form.get('stars')?.touched && form.get('stars')?.invalid) {
+      <p class="text-xs text-red-500 mt-1">
+        Debes seleccionar una calificación entre 1 y 5 estrellas.
+      </p>
+    }
+  </div>
+
+  <mat-form-field appearance="outline" class="w-full">
+    <mat-label>Comentario opcional</mat-label>
+    <textarea
+      matInput
+      rows="4"
+      formControlName="comment"
+      maxlength="500"
+      placeholder="Escribe tu comentario...">
+    </textarea>
+    <mat-hint align="end">
+      {{ form.value.comment?.length || 0 }}/500
+    </mat-hint>
+  </mat-form-field>
+
+  <button
+    mat-flat-button
+    color="primary"
+    type="submit"
+    [disabled]="saving"
+  >
+    {{ vote?.id_vote ? 'Actualizar calificación' : 'Enviar calificación' }}
+  </button>
+
+</form>

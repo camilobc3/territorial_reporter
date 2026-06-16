@@ -1,1 +1,172 @@
-<p>create works!</p>
+<div class="flex flex-col gap-4">
+
+  <div>
+    <h2 class="text-2xl font-semibold m-0">Calificar anotación</h2>
+    <p class="text-sm text-muted mt-1">
+      Busca una anotación en el mapa, selecciónala y registra tu calificación.
+    </p>
+  </div>
+
+  <mat-card class="cardWithShadow mb-0!">
+    <mat-card-content>
+      <form [formGroup]="filterForm" class="flex flex-col sm:flex-row gap-4">
+
+        <mat-form-field appearance="outline" class="flex-1" subscriptSizing="dynamic">
+          <mat-label>Comuna</mat-label>
+          <mat-select formControlName="commune" (selectionChange)="onCommuneChange($event.value)">
+            @if (loadingCommunes) {
+              <mat-option disabled>Cargando comunas...</mat-option>
+            } @else {
+              @for (commune of communes; track commune.id_commune) {
+                <mat-option [value]="commune.id_commune">
+                  {{ commune.name }}
+                </mat-option>
+              }
+            }
+          </mat-select>
+          <mat-icon matSuffix>location_city</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="flex-1" subscriptSizing="dynamic">
+          <mat-label>Barrio</mat-label>
+          <mat-select formControlName="neighborhood" (selectionChange)="onNeighborhoodChange($event.value)">
+            @if (loadingNeighborhoods) {
+              <mat-option disabled>Cargando barrios...</mat-option>
+            } @else if (neighborhoods.length === 0) {
+              <mat-option disabled>Selecciona una comuna primero</mat-option>
+            } @else {
+              @for (neighborhood of neighborhoods; track neighborhood.id_neighborhood) {
+                <mat-option [value]="neighborhood.id_neighborhood">
+                  {{ neighborhood.name }}
+                </mat-option>
+              }
+            }
+          </mat-select>
+          <mat-icon matSuffix>holiday_village</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="flex-1" subscriptSizing="dynamic">
+          <mat-label>Categoría</mat-label>
+          <mat-select formControlName="category" (selectionChange)="onCategoryFilterChange($event.value)">
+            <mat-option [value]="null">Todas las categorías</mat-option>
+
+            @for (category of categories; track category.id_category) {
+              <mat-option [value]="category.id_category">
+                {{ category.name }}
+              </mat-option>
+            }
+          </mat-select>
+          <mat-icon matSuffix>category</mat-icon>
+        </mat-form-field>
+
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="flex gap-4 flex-col lg:flex-row">
+
+    <mat-card class="cardWithShadow flex-1 mb-0! overflow-hidden">
+      <mat-card-content class="p-0! relative">
+
+        @if (!selectedNeighborhood) {
+          <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-gray-400 bg-white/70 z-[5] pointer-events-none">
+            <mat-icon style="font-size:48px;width:48px;height:48px;">map</mat-icon>
+            <p class="text-base font-medium">Selecciona una comuna y un barrio</p>
+            <p class="text-sm">Las anotaciones aparecerán en el mapa.</p>
+          </div>
+        }
+
+        @if (selectedNeighborhood) {
+          <div class="absolute z-10 top-4 right-4 bg-white/95 rounded-lg shadow-sm border border-border px-3 py-2 text-xs font-medium">
+            @if (loadingAnnotations) {
+              Cargando anotaciones...
+            } @else {
+              {{ filteredAnnotations.length }} anotaciones encontradas
+            }
+          </div>
+        }
+
+        <app-vote-map
+          [annotations]="filteredAnnotations"
+          [idNeighborhood]="selectedNeighborhood?.id_neighborhood ?? null"
+          [selectedAnnotationId]="selectedAnnotation?.id_annotation ?? null"
+          height="600px"
+          (annotationSelected)="selectAnnotation($event)">
+        </app-vote-map>
+
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="cardWithShadow w-full lg:w-[420px] shrink-0 mb-0!" style="height: 600px;">
+      <mat-card-content class="h-full overflow-y-auto">
+
+        @if (!selectedAnnotation) {
+          <div class="flex flex-col items-center justify-center h-full gap-3 text-gray-400 text-center">
+            <mat-icon style="font-size:48px;width:48px;height:48px;">touch_app</mat-icon>
+            <p class="text-base font-medium">Selecciona una anotación</p>
+            <p class="text-sm">Haz clic en un punto del mapa para calificar.</p>
+          </div>
+        } @else {
+          <div class="flex flex-col gap-4">
+
+            <div>
+              <h3 class="text-lg font-semibold m-0">Detalle de la anotación</h3>
+              <p class="text-sm text-muted mt-1">
+                Anotación #{{ selectedAnnotation.id_annotation }}
+              </p>
+            </div>
+
+            <section>
+              <h4 class="text-sm font-semibold mb-1">Descripción</h4>
+              <p class="text-sm text-muted whitespace-pre-line">
+                {{ selectedAnnotation.description }}
+              </p>
+            </section>
+
+            <section>
+              <h4 class="text-sm font-semibold mb-1">Ubicación</h4>
+              <p class="text-sm text-muted">
+                Latitud: {{ selectedAnnotation.latitude | number:'1.6-6' }}<br />
+                Longitud: {{ selectedAnnotation.longitude | number:'1.6-6' }}
+              </p>
+            </section>
+
+            @if (loadingVote) {
+              <div class="flex justify-center py-4">
+                <mat-spinner diameter="28"></mat-spinner>
+              </div>
+            } @else {
+              @if (existingVote) {
+                <div class="rounded-lg bg-light-warning p-3 text-sm">
+                  Ya calificaste esta anotación. Puedes editar tu calificación existente.
+                </div>
+              }
+
+              <app-vote-form
+                [vote]="existingVote"
+                [saving]="savingVote"
+                (voteSubmitted)="saveVote($event)">
+              </app-vote-form>
+            }
+
+            @if (message) {
+              <div class="rounded-lg bg-light-success text-success p-3 text-sm">
+                {{ message }}
+              </div>
+            }
+
+            @if (error) {
+              <div class="rounded-lg bg-light-error text-error p-3 text-sm">
+                {{ error }}
+              </div>
+            }
+
+          </div>
+        }
+
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+
+</div>

@@ -1,0 +1,33 @@
+<div class="w-80 min-w-0 flex flex-col">
+
+    <!-- Selector de comuna -->
+    <mat-form-field appearance="outline" class="w-full mb-2" subscriptSizing="dynamic">
+      <mat-label>Comuna</mat-label>
+      <mat-select (selectionChange)="onCommuneChange($event.value)">
+        @if (loadingCommunes) {
+          <mat-option disabled>Cargando comunas...</mat-option>
+        } @else if (communes.length === 0) {
+          <mat-option disabled>No hay comunas registradas</mat-option>
+        } @else {
+          @for (commune of communes; track commune.id_commune) {
+            <mat-option [value]="commune.id_commune">{{ commune.name }}</mat-option>
+          }
+        }
+      </mat-select>
+    </mat-form-field>
+  
+    <!-- Tabla de barrios -->
+    <app-optimized-table
+      title="Barrios"
+      subtitle="Selecciona un barrio para demarcarlo."
+      searchPlaceholder="Buscar barrio..."
+      searchKey="name"
+      [columns]="columns"
+      [actions]="actions"
+      [data]="neighborhoods"
+      [loading]="loading"
+      [showCreateButton]="false"
+      (action)="onAction($event)">
+    </app-optimized-table>
+  
+  </div>

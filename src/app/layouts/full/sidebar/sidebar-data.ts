@@ -19,6 +19,23 @@ export const navItems: NavItem[] = [
     route: '/ui-components/badge',
   },
   {
+  displayName: 'Calificaciones',
+  iconName: 'solar:star-line-duotone',
+  route: '/votes/list',
+  children: [
+    {
+      displayName: 'Mis calificaciones',
+      iconName: 'tabler:point',
+      route: '/votes/list',
+    },
+    {
+      displayName: 'Calificar anotación',
+      iconName: 'tabler:point',
+      route: '/votes/create',
+    }
+  ]
+},
+  {
     displayName: 'Chips',
     iconName: 'solar:danger-circle-line-duotone',
     route: '/ui-components/chips',
@@ -37,6 +54,12 @@ export const navItems: NavItem[] = [
     displayName: 'Tooltips',
     iconName: 'solar:text-field-focus-line-duotone',
     route: '/ui-components/tooltips',
+  },
+
+  {
+    displayName: 'Mapa',
+    iconName: 'solar:point-on-map-perspective-line-duotone',
+    route: '/tracking',
   },
 
   {

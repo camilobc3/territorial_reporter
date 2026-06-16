@@ -40,7 +40,7 @@ export class EvidencesService {
   }
 
   /**
-   * Crear evidencia
+   * Crear evidencia (sin archivo)
    * POST /evidences
    */
   create(evidence: Omit<Evidence, 'id_evidence'>): Observable<Evidence> {
@@ -49,13 +49,20 @@ export class EvidencesService {
 
   /**
    * Subir archivo de evidencia (multipart/form-data)
-   * POST /evidences/upload
+   * POST /evidences
+   *
+   * El backend reutiliza el endpoint de creación: si detecta "file" en
+   * request.files, lo guarda y asigna file_url automáticamente. Por eso
+   * además enviamos file_type y file_size (requeridos por el modelo) y
+   * id_annotation para asociar la evidencia con la anotación.
    */
   upload(idAnnotation: number, file: File): Observable<Evidence> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('id_annotation', String(idAnnotation));
-    return this.http.post<Evidence>(`${this.apiUrl}/upload`, formData);
+    formData.append('file_type', file.type || 'application/octet-stream');
+    formData.append('file_size', String(file.size));
+    return this.http.post<Evidence>(this.apiUrl, formData);
   }
 
   /**

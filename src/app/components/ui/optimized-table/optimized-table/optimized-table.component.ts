@@ -27,6 +27,7 @@ export class OptimizedTableComponent<T extends Record<string, any>> {
   @Input() searchPlaceholder = 'Buscar...';
   /** Clave del campo sobre el que se filtra en el buscador */
   @Input() searchKey = 'name';
+  @Input() showCreateButton = true;
 
   // --- Definición de columnas y acciones ---
   @Input() columns: OptimizedColumnDef[] = [];

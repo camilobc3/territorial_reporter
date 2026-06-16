@@ -1,0 +1,113 @@
+<mat-card class="cardWithShadow h-full mb-0!">
+  <mat-card-content class="h-full overflow-y-auto">
+
+    <div class="flex items-start justify-between gap-3 mb-4">
+      <div>
+        <h3 class="text-lg font-semibold m-0">Filtros</h3>
+        <p class="text-xs text-muted mt-1">
+          Selecciona categorías y subcategorías.
+        </p>
+      </div>
+
+      <button
+        mat-icon-button
+        type="button"
+        aria-label="Limpiar filtros"
+        matTooltip="Limpiar filtros"
+        (click)="clear()"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+
+    @if (nodes.length === 0) {
+      <div class="flex flex-col items-center justify-center py-8 text-gray-400 text-center">
+        <mat-icon style="font-size:40px;width:40px;height:40px;">category</mat-icon>
+        <p class="text-sm font-medium mt-2">No hay categorías disponibles</p>
+      </div>
+    } @else {
+
+      <mat-accordion multi>
+
+        @for (node of nodes; track node.category.id_category) {
+          <mat-expansion-panel [expanded]="true" class="filter-panel">
+
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <div class="flex items-center justify-between w-full gap-2">
+
+                  <mat-checkbox
+                    [checked]="isNodeSelected(node)"
+                    [indeterminate]="isNodeIndeterminate(node)"
+                    (click)="$event.stopPropagation()"
+                    (change)="toggleNode(node, $event.checked)"
+                  >
+                    <span class="font-semibold text-sm">
+                      {{ node.category.name }}
+                    </span>
+                  </mat-checkbox>
+
+                  <span class="count-badge">
+                    {{ node.count }}
+                  </span>
+
+                </div>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            @if (node.children.length === 0) {
+              <p class="text-xs text-muted pl-2">
+                Sin subcategorías
+              </p>
+            } @else {
+              <div class="flex flex-col gap-2 pl-2">
+
+                @for (child of node.children; track child.category.id_category) {
+                  <div class="flex items-center justify-between gap-2 child-row">
+
+                    <mat-checkbox
+                      [checked]="isSelected(child.category.id_category)"
+                      (change)="toggleSingleCategory(child.category.id_category, $event.checked)"
+                    >
+                      <span class="text-sm">
+                        {{ child.category.name }}
+                      </span>
+                    </mat-checkbox>
+
+                    <span class="count-badge small">
+                      {{ child.count }}
+                    </span>
+
+                  </div>
+                }
+
+              </div>
+            }
+
+          </mat-expansion-panel>
+        }
+
+      </mat-accordion>
+    }
+
+    <div class="summary-box mt-4">
+      <div class="flex items-center gap-2">
+        <mat-icon class="text-primary">map</mat-icon>
+        <span class="text-sm font-semibold">
+          Mostrando {{ totalVisible }} anotaciones
+        </span>
+      </div>
+
+      @if (selectedIds.length > 0) {
+        <p class="text-xs text-muted mt-1">
+          Filtros aplicados: {{ selectedIds.length }}
+        </p>
+      } @else {
+        <p class="text-xs text-muted mt-1">
+          Sin filtros de categoría aplicados.
+        </p>
+      }
+    </div>
+
+  </mat-card-content>
+</mat-card>

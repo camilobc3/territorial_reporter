@@ -43,6 +43,21 @@ export const routes: Routes = [
           import('./pages/citizens/citizens.routes').then((m) => m.CitizenRoutes),
       },
       {
+        path: 'tracking',
+        loadChildren: () =>
+          import('./pages/tracking/tracking.routes').then((m) => m.TrackingRoutes),
+      },
+      {
+        path: 'votes',
+        loadChildren: () =>
+          import('./pages/votes/votes.routes').then(m => m.VotesRoutes)
+      },
+      {
+        path: 'annotations',
+        loadChildren: () =>
+          import('./pages/annotations/annotations.routes').then((m) => m.AnnotationsRoutes),
+      },
+      {
         path: 'ui-components',
         loadChildren: () =>
           import('./pages/ui-components/ui-components.routes').then(
