@@ -1,21 +1,81 @@
-<div class="grid grid-cols-12 gap-6">
-  <div class="col-span-12">
-    <app-mathew-anderson></app-mathew-anderson>
-  </div>
-  <div class="col-span-12">
-    <app-top-cards></app-top-cards>
-  </div>
-  <div class="col-span-12 lg:col-span-8">
-    <app-revenue-updates></app-revenue-updates>
-  </div>
-  <div class="col-span-12 lg:col-span-4">
-    <app-yearly-breakup></app-yearly-breakup>
-    <app-monthly-earnings></app-monthly-earnings>
-  </div>
-  <div class="col-span-12 lg:col-span-4">
-    <app-recent-transactions></app-recent-transactions>
-  </div>
-  <div class="col-span-12 lg:col-span-8">
-    <app-top-projects></app-top-projects>
-  </div>
+<div class="flex flex-col gap-6">
+  <section class="rounded-2xl bg-primary text-white p-6 md:p-8 overflow-hidden relative">
+    <div class="relative z-10 max-w-3xl">
+      <span class="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold mb-4">
+        Sistema de gestión territorial
+      </span>
+      <h1 class="text-3xl md:text-4xl font-semibold m-0">Reporte Territorial</h1>
+      <p class="text-white/85 text-base md:text-lg mt-3 mb-0">
+        Plataforma para registrar anotaciones ciudadanas, consultar información del territorio,
+        hacer seguimiento operativo y generar reportes para la toma de decisiones.
+      </p>
+    </div>
+    <div class="absolute -right-12 -bottom-16 size-56 rounded-full bg-white/10"></div>
+    <div class="absolute right-20 top-8 size-24 rounded-full bg-white/10"></div>
+  </section>
+
+  <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    @for (card of summaryCards; track card.label) {
+      <a [routerLink]="card.route" class="cardWithShadow rounded-xl bg-white p-5 block hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex items-center justify-center size-11 rounded-xl" [ngClass]="card.tone">
+            <mat-icon>{{ card.icon }}</mat-icon>
+          </span>
+          <div>
+            <p class="text-sm text-muted m-0">{{ card.label }}</p>
+            <h3 class="text-base font-semibold m-0 mt-1">{{ card.value }}</h3>
+          </div>
+        </div>
+      </a>
+    }
+  </section>
+
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <mat-card class="cardWithShadow lg:col-span-2 mb-0!">
+      <mat-card-content>
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <mat-card-title>Accesos rápidos</mat-card-title>
+            <mat-card-subtitle>Continúa con las tareas principales del sistema.</mat-card-subtitle>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          @for (action of quickActions; track action.label) {
+            <a [routerLink]="action.route" class="border border-border rounded-xl p-4 hover:bg-gray-50 transition-colors block">
+              <div class="flex items-start gap-3">
+                <span class="inline-flex items-center justify-center size-10 rounded-lg bg-light-primary text-primary shrink-0">
+                  <mat-icon>{{ action.icon }}</mat-icon>
+                </span>
+                <div>
+                  <h4 class="text-sm font-semibold m-0">{{ action.label }}</h4>
+                  <p class="text-xs text-muted mt-1 mb-0">{{ action.description }}</p>
+                </div>
+              </div>
+            </a>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="cardWithShadow mb-0!">
+      <mat-card-content>
+        <mat-card-title>Flujo de trabajo</mat-card-title>
+        <div class="flex flex-col gap-4 mt-4">
+          <div class="flex gap-3">
+            <span class="size-8 rounded-full bg-light-primary text-primary flex items-center justify-center font-semibold shrink-0">1</span>
+            <p class="text-sm m-0">Registra o consulta anotaciones georreferenciadas.</p>
+          </div>
+          <div class="flex gap-3">
+            <span class="size-8 rounded-full bg-light-primary text-primary flex items-center justify-center font-semibold shrink-0">2</span>
+            <p class="text-sm m-0">Asocia entidades, categorías, evidencias y valoraciones ciudadanas.</p>
+          </div>
+          <div class="flex gap-3">
+            <span class="size-8 rounded-full bg-light-primary text-primary flex items-center justify-center font-semibold shrink-0">3</span>
+            <p class="text-sm m-0">Monitorea funcionarios y genera reportes territoriales.</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </section>
 </div>

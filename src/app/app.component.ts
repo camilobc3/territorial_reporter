@@ -7,5 +7,5 @@ import { RouterOutlet } from '@angular/router';
     templateUrl: './app.component.html'
 })
 export class AppComponent {
-  title = 'TailwindAdmin Angular Admin Tempplate';
+  title = 'Reporte Territorial';
 }
