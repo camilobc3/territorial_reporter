@@ -44,10 +44,6 @@ export class AppSideLoginComponent {
         });
       }
 
-      console.log('Usuario autenticado con Firebase:', firebaseUser);
-      console.log('Token guardado:', this.authService.getTokenFromLocalStorage());
-      console.log('Usuario guardado:', this.authService.getUserFromLocalStorage());
-
       this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Error iniciando sesión con Google:', error);

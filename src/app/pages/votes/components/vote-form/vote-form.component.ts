@@ -15,11 +15,7 @@ import {
 
 import { MaterialModule } from 'src/app/material.module';
 import { Vote } from 'src/app/models/vote';
-
-export interface VoteFormValue {
-  stars: number;
-  comment: string | null;
-}
+import { VoteFormValue } from '../../types/vote-form.types';
 
 @Component({
   selector: 'app-vote-form',

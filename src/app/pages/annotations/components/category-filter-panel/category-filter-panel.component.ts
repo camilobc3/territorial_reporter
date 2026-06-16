@@ -2,13 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { MaterialModule } from 'src/app/material.module';
-import { Category } from 'src/app/models/category';
-
-export interface CategoryFilterNode {
-  category: Category;
-  count: number;
-  children: CategoryFilterNode[];
-}
+import { CategoryFilterNode } from '../../types/category-filter.types';
 
 @Component({
   selector: 'app-category-filter-panel',

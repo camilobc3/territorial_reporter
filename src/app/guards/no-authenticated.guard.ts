@@ -8,7 +8,7 @@ import {
   UrlTree
 } from '@angular/router';
 
-import { StorageService } from '../services/storage/storage.service';
+import { AuthService } from '../services/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +16,7 @@ import { StorageService } from '../services/storage/storage.service';
 export class NoAuthenticatedGuard implements CanActivate, CanActivateChild {
 
   constructor(
-    private storageService: StorageService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
@@ -35,9 +35,7 @@ export class NoAuthenticatedGuard implements CanActivate, CanActivateChild {
   }
 
   private validateNoAuthentication(): boolean | UrlTree {
-    const token = this.storageService.getItem('firebase_token');
-
-    if (!token) {
+    if (!this.authService.hasStoredSession()) {
       return true;
     }
 

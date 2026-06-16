@@ -7,6 +7,7 @@ import { HierarchicalTableComponent } from 'src/app/components/ui/hierarchical-t
 import { HierarchicalActionButton, HierarchicalColumnDef } from 'src/app/components/ui/hierarchical-table/hierarchical-table.types';
 import { CategoryFormComponent } from '../components/category-form/category-form.component';
 import { SidePanelComponent } from 'src/app/components/ui/side-panel/side-panel.component';
+import { environment } from 'src/environments/environments';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -28,7 +29,7 @@ export class ListComponent implements OnInit {
 
   columns: HierarchicalColumnDef[] = [
     { key: 'image_url', header: 'Imagen', type: 'image',
-      imageBaseUrl: 'http://localhost:5000', imageFallbackIcon: 'category' },
+      imageBaseUrl: environment.apiUrl, imageFallbackIcon: 'category' },
     { key: 'name',        header: 'Nombre' },
     { key: 'description', header: 'Descripción', hideOnMobile: true },
     {

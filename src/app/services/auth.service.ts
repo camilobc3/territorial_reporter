@@ -67,6 +67,10 @@ export class AuthService {
     return this.storageService.getObject<FirebaseStoredUser>(this.USER_KEY);
   }
 
+  hasStoredSession(): boolean {
+    return Boolean(this.storageService.getItem(this.TOKEN_KEY));
+  }
+
   async getIdToken(): Promise<string | null> {
     const currentUser = this.auth.currentUser;
 

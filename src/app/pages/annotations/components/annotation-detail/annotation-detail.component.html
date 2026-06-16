@@ -4,7 +4,7 @@
 
     @if (!annotation) {
       <div class="flex flex-col items-center justify-center h-full gap-3 text-gray-400 p-6">
-        <mat-icon style="font-size:48px;width:48px;height:48px;">touch_app</mat-icon>
+        <mat-icon class="!text-[48px] !w-12 !h-12">touch_app</mat-icon>
         <p class="text-base font-medium text-center">Selecciona una anotación en el mapa</p>
         <p class="text-sm text-center">Haz clic en un punto para ver su detalle.</p>
       </div>
@@ -15,8 +15,8 @@
         <div>
           <h2 class="text-lg font-semibold m-0">Detalle de la anotación</h2>
           <span class="inline-flex items-center gap-1.5 text-xs font-medium mt-1 px-2 py-0.5 rounded-full"
-            [style.backgroundColor]="statusColor + '1A'" [style.color]="statusColor">
-            <span class="inline-block w-2 h-2 rounded-full" [style.backgroundColor]="statusColor"></span>
+            [ngClass]="statusBadgeClass">
+            <span class="inline-block w-2 h-2 rounded-full" [ngClass]="statusDotClass"></span>
             {{ statusLabel }}
           </span>
         </div>
@@ -58,7 +58,7 @@
               <div class="flex flex-wrap gap-2">
                 @for (cat of categories; track cat.id_category) {
                   <span class="inline-flex items-center gap-1 rounded-full bg-light-primary text-primary text-xs font-medium px-3 py-1">
-                    <mat-icon style="font-size:14px; width:14px; height:14px;">{{ iconFor(cat) }}</mat-icon>
+                    <mat-icon class="!text-[14px] !w-[14px] !h-[14px]">{{ iconFor(cat) }}</mat-icon>
                     {{ cat.name }}
                   </span>
                 }
@@ -119,7 +119,7 @@
                     <div class="text-sm bg-gray-50 rounded-lg p-2">
                       <div class="flex items-center gap-0.5 mb-1">
                         @for (i of stars; track i) {
-                          <mat-icon style="font-size:14px; width:14px; height:14px;"
+                          <mat-icon class="!text-[14px] !w-[14px] !h-[14px]"
                             [class.text-warning]="i <= vote.stars"
                             [class.text-gray-300]="i > vote.stars">
                             star

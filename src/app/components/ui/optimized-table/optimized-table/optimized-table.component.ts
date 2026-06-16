@@ -93,6 +93,6 @@ export class OptimizedTableComponent<T extends Record<string, any>> {
   }
 
   onImgError(event: Event): void {
-    (event.target as HTMLImageElement).style.display = 'none';
+    (event.target as HTMLImageElement).classList.add('hidden');
   }
 }

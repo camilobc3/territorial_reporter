@@ -23,18 +23,16 @@ import { AnnotationsService } from 'src/app/services/annotations.service';
 import { AnnotationCategoriesService } from 'src/app/services/annotation-categories.service';
 import { InterestedPartiesService } from 'src/app/services/interested-parties.service';
 import { EvidencesService } from 'src/app/services/evidences.service';
+import { CitizenContextService } from 'src/app/services/citizen-context.service';
 
 import { LeafletMapService } from 'src/app/services/api/leaflet/leaflet-map.service';
 import { PolygonPersistenceService } from 'src/app/services/api/leaflet/polygon-persistence.service';
 
-import { AnnotationFormComponent, AnnotationFormPayload } from '../components/annotation-form/annotation-form.component';
+import { AnnotationFormComponent } from '../components/annotation-form/annotation-form.component';
+import { AnnotationFormPayload } from '../types/annotation-form.types';
 
 // Coordenadas aproximadas del centro de Manizales (consistente con tracking.component.ts)
 const MANIZALES_CENTER = { centerLat: 5.0703, centerLng: -75.5138, zoom: 13 };
-
-// TODO: reemplazar por el id_citizen real asociado al usuario autenticado
-// una vez exista el mapeo funcionario/ciudadano en el backend.
-const DEFAULT_CITIZEN_ID = 1;
 
 @Component({
   selector: 'app-annotations-create',
@@ -57,7 +55,9 @@ export class CreateComponent implements OnInit {
   loadingCommunes = false;
   loadingNeighborhoods = false;
   loadingCatalogs = false;
+  loadingCitizen = false;
   saving = false;
+  currentCitizenId: number | null = null;
 
   // ── Selección actual ───────────────────────────────────────────────────
   selectedNeighborhood: Neighborhood | null = null;
@@ -82,6 +82,7 @@ export class CreateComponent implements OnInit {
     private evidencesService: EvidencesService,
     private mapService: LeafletMapService,
     private polygonPersistence: PolygonPersistenceService,
+    private citizenContextService: CitizenContextService,
   ) {}
 
   ngOnInit(): void {
@@ -93,11 +94,27 @@ export class CreateComponent implements OnInit {
       category: [null],
     });
 
+    this.loadCurrentCitizen();
     this.loadCommunes();
     this.loadCatalogs();
   }
 
   // ── Carga inicial ──────────────────────────────────────────────────────
+
+  private loadCurrentCitizen(): void {
+    this.loadingCitizen = true;
+
+    this.citizenContextService.getCurrentCitizenId().subscribe({
+      next: (idCitizen) => {
+        this.currentCitizenId = idCitizen;
+        this.loadingCitizen = false;
+      },
+      error: () => {
+        this.currentCitizenId = null;
+        this.loadingCitizen = false;
+      },
+    });
+  }
 
   private loadCommunes(): void {
     this.loadingCommunes = true;
@@ -244,11 +261,20 @@ export class CreateComponent implements OnInit {
       return;
     }
 
+    if (!this.currentCitizenId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Ciudadano no identificado',
+        text: 'No se pudo asociar la anotación al usuario autenticado.',
+      });
+      return;
+    }
+
     this.saving = true;
 
     const annotationData: Omit<Annotation, 'id_annotation'> = {
       id_neighborhood: this.selectedNeighborhood.id_neighborhood,
-      id_citizen: DEFAULT_CITIZEN_ID,
+      id_citizen: this.currentCitizenId,
       description: payload.description,
       latitude: payload.latitude,
       longitude: payload.longitude,

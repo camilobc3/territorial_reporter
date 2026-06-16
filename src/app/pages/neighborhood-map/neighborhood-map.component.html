@@ -12,7 +12,7 @@
       <mat-card class="cardWithShadow flex-1">
         <mat-card-content>
           <div class="flex flex-col items-center justify-center h-full py-16 gap-3 text-gray-400">
-            <mat-icon style="font-size:48px;width:48px;height:48px;">map</mat-icon>
+            <mat-icon class="!text-[48px] !w-12 !h-12">map</mat-icon>
             <p class="text-base font-medium">Selecciona un barrio</p>
             <p class="text-sm">El mapa de demarcación aparecerá aquí.</p>
           </div>
@@ -33,8 +33,7 @@
 
       <div
         leaflet
-        class="flex-1 rounded-lg overflow-hidden"
-        style="height: 520px;"
+        class="flex-1 rounded-lg overflow-hidden h-[520px]"
         [leafletOptions]="mapOptions"
         (leafletMapReady)="onMapReady($event)">
       </div>

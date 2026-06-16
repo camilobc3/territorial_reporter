@@ -12,6 +12,7 @@ import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import * as L from 'leaflet';
 
 import { Annotation } from 'src/app/models/annotation';
+import { annotationPopupHtml, buildAnnotationIcon } from 'src/app/helpers/annotation-marker.helper';
 import { LeafletMapService } from 'src/app/services/api/leaflet/leaflet-map.service';
 import { PolygonPersistenceService } from 'src/app/services/api/leaflet/polygon-persistence.service';
 
@@ -41,6 +42,10 @@ export class VoteMapComponent implements OnChanges {
   @Output() annotationSelected = new EventEmitter<Annotation>();
 
   mapOptions!: L.MapOptions;
+
+  get heightClass(): string {
+    return this.height === '520px' ? 'h-[520px]' : 'h-[600px]';
+  }
 
   private map!: L.Map;
   private polygonLayer = new L.FeatureGroup();
@@ -126,14 +131,11 @@ export class VoteMapComponent implements OnChanges {
       const marker = L.marker(
         [annotation.latitude, annotation.longitude],
         {
-          icon: this.buildAnnotationIcon(annotation.status)
+          icon: buildAnnotationIcon(annotation.status)
         }
       );
 
-      marker.bindPopup(`
-        <strong>Anotación #${annotation.id_annotation}</strong><br>
-        ${annotation.description ?? ''}
-      `);
+      marker.bindPopup(annotationPopupHtml(annotation.id_annotation, annotation.description));
 
       marker.on('click', () => {
         this.annotationSelected.emit(annotation);
@@ -162,37 +164,4 @@ export class VoteMapComponent implements OnChanges {
     marker?.openPopup();
   }
 
-  private buildAnnotationIcon(status: string | undefined | null): L.DivIcon {
-    const color = this.getStatusColor(status);
-
-    return L.divIcon({
-      className: '',
-      html: `<div style="
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: ${color};
-        border: 2px solid white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-      "></div>`,
-      iconSize: [18, 18],
-      iconAnchor: [9, 9],
-    });
-  }
-
-  private getStatusColor(status: string | undefined | null): string {
-    const key = (status ?? '').toLowerCase().trim();
-
-    const colors: Record<string, string> = {
-      open: '#2563eb',
-      pending: '#2563eb',
-      in_progress: '#f59e0b',
-      in_review: '#f59e0b',
-      resolved: '#16a34a',
-      closed: '#16a34a',
-      rejected: '#dc2626',
-    };
-
-    return colors[key] ?? '#6b7280';
-  }
 }
