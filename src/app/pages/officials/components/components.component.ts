@@ -77,11 +77,22 @@ export class ComponentsComponent implements OnInit, OnChanges {
   onSubmit(): void {
     if (this.form.invalid) return;
 
+    const formValues = this.form.value;
+    
+    // Construir payload que será completado por el componente padre
     const payload: Partial<Official> = {
-      ...this.official,
-      ...this.form.value,
+      name: formValues.name,
+      email: formValues.email,
+      phone: formValues.phone || null,
+      role: formValues.role,
+      status: formValues.status,
+      gps_active: formValues.gps_active,
+      last_latitude: formValues.last_latitude,
+      last_longitude: formValues.last_longitude,
+      id_entity: this.official?.id_entity,
     };
 
+    console.log('Form payload (desde componente):', payload);
     this.formSubmit.emit(payload);
   }
 

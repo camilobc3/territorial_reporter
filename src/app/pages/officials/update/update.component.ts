@@ -58,10 +58,26 @@ export class UpdateComponent implements OnInit {
     this.isSubmitting = true;
     this.errorMessage = null;
 
-    const payload: Official = { 
-      id_official: this.id, 
-      ...(formValue as Official) 
+    if (!this.official?.id_entity) {
+      this.errorMessage = 'Error: id_entity no disponible';
+      this.isSubmitting = false;
+      return;
+    }
+
+    // Solo enviar los campos editados
+    const payload: Official = {
+      id_entity: this.official.id_entity,
+      name: formValue.name || '',
+      email: formValue.email || '',
+      phone: formValue.phone || null,
+      role: formValue.role || '',
+      status: formValue.status || 'active',
+      gps_active: formValue.gps_active ?? true,
+      last_latitude: formValue.last_latitude ?? null,
+      last_longitude: formValue.last_longitude ?? null,
     };
+
+    console.log('Payload a enviar:', payload);
 
     this.officialsService.update(this.id, payload).subscribe({
       next: () => {
@@ -72,10 +88,17 @@ export class UpdateComponent implements OnInit {
             : undefined
         });
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error al actualizar oficial:', err);
+        console.error('Detalles del error:', {
+          status: err.status,
+          statusText: err.statusText,
+          error: err.error
+        });
         this.isSubmitting = false;
-        this.errorMessage = 'Error al actualizar el funcionario. Por favor, intente nuevamente.';
+        const errorMsg = err?.error?.detail || err?.error?.message || 
+                         'Error al actualizar el funcionario. Por favor, intente nuevamente.';
+        this.errorMessage = errorMsg;
       }
     });
   }
