@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "TailwindAdmin": {
+    "reporte-territorial": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -19,7 +19,7 @@
           "options": {
             "allowedCommonJsDependencies": ["bezier-easing", "leaflet-draw"],
             "outputPath": {
-              "base": "dist/TailwindAdmin"
+              "base": "dist/reporte-territorial"
             },
             "index": "src/index.html",
             "polyfills": ["zone.js"],
@@ -72,10 +72,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "TailwindAdmin:build:production"
+              "buildTarget": "reporte-territorial:build:production"
             },
             "development": {
-              "buildTarget": "TailwindAdmin:build:development"
+              "buildTarget": "reporte-territorial:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -83,7 +83,7 @@
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n",
           "options": {
-            "buildTarget": "TailwindAdmin:build"
+            "buildTarget": "reporte-territorial:build"
           }
         },
         "test": {
